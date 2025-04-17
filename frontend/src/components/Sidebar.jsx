@@ -1,7 +1,6 @@
-// src/components/Sidebar.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './Sidebar.css'; // Create this CSS file
+import './Sidebar.css'; 
 
 const Sidebar = () => {
     const procedures = [

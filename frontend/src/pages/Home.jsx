@@ -1,209 +1,61 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios'; // for http requests to external APIs
-import './Home.css'; // css file
-
-// url for backend
-const API_URL = 'http://localhost:8800'; // validate backend actually running on port 8800
+// src/pages/Home.jsx
+import React from 'react';
+import { Link } from 'react-router-dom'; // Import Link for navigation
+import './HomeLanding.css'; // Create a new CSS file for landing page specific styles
 
 const Home = () => {
-    const [airplanes, setAirplanes] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
 
-    // add airplane form
-    const [newAirplane, setNewAirplane] = useState({
-        airlineID: '',
-        tail_num: '',
-        seat_capacity: '',
-        speed: '',
-        locationID: '', 
-        plane_type: '', 
-        maintenanced: false, 
-        model: '', 
-        neo: false 
-    });
-    const [addError, setAddError] = useState(null);
-    const [addSuccess, setAddSuccess] = useState(null);
+    // Define navigation links dynamically (easier to manage)
+    const procedures = [
+        { path: '/proc/add-airport', label: 'Add Airport' },
+        // Add other procedures as you create routes/components
+        // { path: '/proc/add-airplane', label: 'Add Airplane' },
+        // { path: '/proc/add-person', label: 'Add Person' },
+    ];
 
-    // get airplanes
-    const fetchAirplanes = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            // need cors
-            const response = await axios.get(`${API_URL}/airplane`);
-            setAirplanes(response.data);
-        } catch (err) {
-            console.error("Error fetching airplanes:", err);
-            setError(err.response?.data?.message || "Failed to fetch airplanes. Is the backend running and CORS enabled?");
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const views = [
+        { path: '/view/flights-in-air', label: 'View Flights in Air' },
+        // Add other views here
+        // { path: '/view/flights-on-ground', label: 'View Flights on Ground' },
+    ];
 
-    // Fetch airplanes when the component mounts
-    useEffect(() => {
-        fetchAirplanes();
-    }, [fetchAirplanes]); // Include fetchAirplanes in dependency array
-
-    // form input changes
-    const handleInputChange = (event) => {
-        const { name, value, type, checked } = event.target;
-        setNewAirplane(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-    };
-
-    // form submission
-    const handleAddAirplane = async (event) => {
-        event.preventDefault(); // Prevent default page reload
-        setAddError(null);
-        setAddSuccess(null);
-
-        // Basic Validation (add more as needed)
-        if (!newAirplane.airlineID || !newAirplane.tail_num || !newAirplane.seat_capacity || !newAirplane.speed) {
-            setAddError("Please fill in all required fields (Airline ID, Tail Number, Seat Capacity, Speed).");
-            return;
-        }
-
-        // Convert numeric fields
-        const airplaneData = {
-            ...newAirplane,
-            seat_capacity: parseInt(newAirplane.seat_capacity, 10),
-            speed: parseInt(newAirplane.speed, 10),
-            // Ensure boolean values are sent correctly if needed
-            maintenanced: Boolean(newAirplane.maintenanced),
-            neo: Boolean(newAirplane.neo),
-            // Handle potentially empty optional fields (send null or omit)
-            locationID: newAirplane.locationID || null,
-            plane_type: newAirplane.plane_type || null,
-            model: newAirplane.model || null,
-        };
-
-        try {
-            // IMPORTANT: You need to create this POST endpoint in your backend
-            const response = await axios.post(`${API_URL}/airplane`, airplaneData);
-            setAddSuccess("Airplane added successfully!");
-            setNewAirplane({ // Clear the form
-                airlineID: '', tail_num: '', seat_capacity: '', speed: '',
-                locationID: '', plane_type: '', maintenanced: false, model: '', neo: false
-            });
-            fetchAirplanes(); // Refresh the list
-        } catch (err) {
-            console.error("Error adding airplane:", err);
-            setAddError(err.response?.data?.message || "Failed to add airplane.");
-        }
-    };
 
     return (
-        <div className="home-container">
-            <header className="home-header">
-                <h1>Flight Tracking Dashboard</h1>
+        <div className="landing-page-container">
+            <header className="landing-header">
+                <h1>Welcome to the Flight Management System</h1>
+                <p className="landing-intro">
+                    Manage and view airlines, airports, flights, personnel, and simulation data.
+                    Use the navigation below or the sidebar to access different features.
+                </p>
             </header>
 
-            <main className="home-main">
-                {/* Section to Add New Airplane */}
-                <section className="card add-airplane-section">
-                    <h2>Add New Airplane</h2>
-                    <form onSubmit={handleAddAirplane} className="add-airplane-form">
-                        {/* Required Fields */}
-                        <div className="form-group">
-                            <label htmlFor="airlineID">Airline ID *</label>
-                            <input type="text" id="airlineID" name="airlineID" value={newAirplane.airlineID} onChange={handleInputChange} required />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="tail_num">Tail Number *</label>
-                            <input type="text" id="tail_num" name="tail_num" value={newAirplane.tail_num} onChange={handleInputChange} required />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="seat_capacity">Seat Capacity *</label>
-                            <input type="number" id="seat_capacity" name="seat_capacity" value={newAirplane.seat_capacity} onChange={handleInputChange} min="1" required />
-                        </div>
-                         <div className="form-group">
-                            <label htmlFor="speed">Speed *</label>
-                            <input type="number" id="speed" name="speed" value={newAirplane.speed} onChange={handleInputChange} min="1" required />
-                        </div>
+            <section className="navigation-section">
+                <h2>Manage Data (Procedures)</h2>
+                <div className="nav-buttons">
+                    {procedures.map(proc => (
+                        <Link key={proc.path} to={proc.path} className="nav-button procedure-button">
+                            {proc.label}
+                        </Link>
+                    ))}
+                     {procedures.length === 0 && <p>No management actions available yet.</p>}
+                </div>
+            </section>
 
-                        {/* Optional Fields */}
-                        <div className="form-group">
-                            <label htmlFor="locationID">Location ID</label>
-                            <input type="text" id="locationID" name="locationID" value={newAirplane.locationID} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group">
-                            <label htmlFor="plane_type">Plane Type</label>
-                            <input type="text" id="plane_type" name="plane_type" value={newAirplane.plane_type} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group">
-                            <label htmlFor="model">Model</label>
-                            <input type="text" id="model" name="model" value={newAirplane.model} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group form-group-checkbox">
-                            <label htmlFor="maintenanced">Maintenanced?</label>
-                            <input type="checkbox" id="maintenanced" name="maintenanced" checked={newAirplane.maintenanced} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group form-group-checkbox">
-                            <label htmlFor="neo">Neo?</label>
-                            <input type="checkbox" id="neo" name="neo" checked={newAirplane.neo} onChange={handleInputChange} />
-                        </div>
+            <section className="navigation-section">
+                <h2>View Data & Reports</h2>
+                 <div className="nav-buttons">
+                    {views.map(view => (
+                        <Link key={view.path} to={view.path} className="nav-button view-button">
+                            {view.label}
+                        </Link>
+                    ))}
+                    {views.length === 0 && <p>No views available yet.</p>}
+                 </div>
+            </section>
 
-                        {addError && <p className="error-message">{addError}</p>}
-                        {addSuccess && <p className="success-message">{addSuccess}</p>}
+            {/* You could add more sections or information here */}
 
-                        <button type="submit" className="submit-button">Add Airplane</button>
-                    </form>
-                </section>
-
-                {/* Section to Display Airplanes */}
-                <section className="card airplane-list-section">
-                    <h2>Airplane Fleet</h2>
-                    {loading && <p>Loading airplanes...</p>}
-                    {error && <p className="error-message">{error}</p>}
-                    {!loading && !error && (
-                        <div className="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Airline ID</th>
-                                        <th>Tail Number</th>
-                                        <th>Capacity</th>
-                                        <th>Speed</th>
-                                        <th>Location</th>
-                                        <th>Type</th>
-                                        <th>Model</th>
-                                        <th>Maintenanced</th>
-                                        <th>Neo</th>
-                                        {/* Add more headers if needed */}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {airplanes.length > 0 ? (
-                                        airplanes.map((plane) => (
-                                            <tr key={`${plane.airlineID}-${plane.tail_num}`}>
-                                                <td>{plane.airlineID}</td>
-                                                <td>{plane.tail_num}</td>
-                                                <td>{plane.seat_capacity}</td>
-                                                <td>{plane.speed}</td>
-                                                <td>{plane.locationID || 'N/A'}</td>
-                                                <td>{plane.plane_type || 'N/A'}</td>
-                                                <td>{plane.model || 'N/A'}</td>
-                                                {/* Display boolean values nicely */}
-                                                <td>{plane.maintenanced ? 'Yes' : 'No'}</td>
-                                                <td>{plane.neo ? 'Yes' : 'No'}</td>
-                                                {/* Add more cells if needed */}
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="9">No airplanes found.</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </section>
-            </main>
         </div>
     );
 };

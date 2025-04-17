@@ -1,0 +1,146 @@
+/* src/pages/FormStyles.css */
+.form-container {
+    max-width: 800px; /* Adjust as needed */
+    margin: 20px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.form-container h2 {
+    text-align: center;
+    color: #2c3e50; /* Dark blue-grey */
+    margin-bottom: 25px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.procedure-form {
+    display: grid;
+    /* Adjust columns based on the specific form */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px 25px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Span columns if needed */
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9em;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="time"],
+.form-group select {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+.form-group input[type="checkbox"] {
+   width: auto;
+   margin-right: 10px;
+   transform: scale(1.1); /* Slightly larger checkbox */
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3498db; /* Blue focus */
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.form-group-checkbox {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 10px; /* Align with other fields */
+}
+.form-group-checkbox label{
+    margin-bottom: 0;
+    font-weight: normal; /* Normal weight for checkbox label */
+}
+
+.form-actions {
+    grid-column: 1 / -1; /* Span full width */
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.submit-button,
+.cancel-button,
+.action-button /* For Land, Takeoff etc. */
+ {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.submit-button {
+    background-color: #2ecc71; /* Green */
+    color: white;
+}
+.submit-button:hover {
+    background-color: #27ae60;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.cancel-button {
+    background-color: #e74c3c; /* Red */
+    color: white;
+}
+.cancel-button:hover {
+    background-color: #c0392b;
+     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.action-button {
+     background-color: #3498db; /* Blue */
+     color: white;
+}
+.action-button:hover {
+     background-color: #2980b9;
+     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+
+.message {
+    grid-column: 1 / -1; /* Span full width */
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}

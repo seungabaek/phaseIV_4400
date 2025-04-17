@@ -1,0 +1,12 @@
+
+.layout-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.content-area {
+    flex-grow: 1;
+    padding: 20px 30px;
+    background-color: #f4f7f6;
+    overflow-y: auto; 
+}

@@ -1,0 +1,79 @@
+/* src/pages/HomeLanding.css */
+
+.landing-page-container {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.landing-header {
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.landing-header h1 {
+    color: #2c3e50; /* Dark blue-grey */
+    margin-bottom: 15px;
+    font-size: 2.2em; /* Larger title */
+}
+
+.landing-intro {
+    font-size: 1.1em;
+    color: #555;
+    line-height: 1.6;
+    max-width: 700px;
+    margin: 0 auto; /* Center the intro text block */
+}
+
+.navigation-section {
+    margin-bottom: 40px;
+}
+
+.navigation-section h2 {
+    color: #34495e; /* Slightly lighter blue-grey */
+    margin-bottom: 25px;
+    font-size: 1.5em;
+}
+
+.nav-buttons {
+    display: flex;
+    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+    justify-content: center; /* Center buttons */
+    gap: 15px; /* Space between buttons */
+}
+
+.nav-button {
+    display: inline-block;
+    padding: 12px 25px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 1em;
+    font-weight: 500;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    min-width: 180px; /* Give buttons a minimum width */
+    text-align: center;
+}
+
+.nav-button:hover {
+    transform: translateY(-2px); /* Slight lift effect */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.procedure-button {
+    background-color: #3498db; /* Blue */
+}
+.procedure-button:hover {
+    background-color: #2980b9; /* Darker blue */
+}
+
+.view-button {
+    background-color: #1abc9c; /* Teal */
+}
+.view-button:hover {
+    background-color: #16a085; /* Darker teal */
+}
