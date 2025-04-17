@@ -24,6 +24,39 @@ const Home = () => {
                     <button onClick={() => navigate('/add-airport')} className="dashboard-button">
                         Add Airport
                     </button>
+                    <button onClick={() => navigate('/add-person')} className="dashboard-button">
+                        Add Person
+                    </button>
+                    <button onClick={() => navigate('/assign-pilot')} className="dashboard-button">
+                        Assign Pilot
+                    </button>
+                    <button onClick={() => navigate('/flight-landing')} className="dashboard-button">
+                        Flight Landing
+                    </button>
+                    <button onClick={() => navigate('/flight-takeoff')} className="dashboard-button">
+                        Flight Takeoff
+                    </button>
+                    <button onClick={() => navigate('/grant-or-revoke')} className="dashboard-button">
+                        Grant or Revoke Pilot License 
+                    </button>
+                    <button onClick={() => navigate('/offer-flight')} className="dashboard-button">
+                        Offer Flight
+                    </button>
+                    <button onClick={() => navigate('/passengers-board')} className="dashboard-button">
+                        Passengers Board
+                    </button>
+                    <button onClick={() => navigate('/passengers-dissembark')} className="dashboard-button">
+                        Passengers Disembark
+                    </button>
+                    <button onClick={() => navigate('/recycle-crew')} className="dashboard-button">
+                        Recycle Crew
+                    </button>
+                    <button onClick={() => navigate('/retire-flight')} className="dashboard-button">
+                        Retire Flight
+                    </button>
+                    <button onClick={() => navigate('/simulation-cycle')} className="dashboard-button">
+                        Simulation Cycle
+                    </button>
                 </div>
             </main>
         </div>
