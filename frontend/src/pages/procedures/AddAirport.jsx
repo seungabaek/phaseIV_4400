@@ -1,7 +1,7 @@
 // src/pages/procedures/AddAirport.jsx
 import React, { useState } from 'react';
 import { callProcedure } from '../../api'; // Import the API helper
-import '../FormStyles.css'; // Create a shared CSS file for forms
+import './FormStyles.css'; 
 
 const AddAirport = () => {
     const [formData, setFormData] = useState({
