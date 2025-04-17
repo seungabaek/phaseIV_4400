@@ -1,10 +1,26 @@
 /* src/pages/Home.css */
 
-.button-grid {
+card {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;    
+}
+
+.card h2 {
+    margin: 0 0 15px;
+    font-size: 1.2em;
+    color: #0056b3;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 8px;
+}
+
+.button-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .dashboard-button {

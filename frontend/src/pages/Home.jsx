@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios'; // for http requests to external APIs
 import { useNavigate } from 'react-router-dom';
-import './Home.css'; // css file
+import './Home.css';
 
-// url for backend
-const API_URL = 'http://localhost:8800'; // validate backend actually running on port 8800
+const API_URL = 'http://localhost:8800'; 
 
-
-
+// THIS IS HOME SCREEN WITH SIDEBAR
 const Home = () => {
     const navigate = useNavigate();
 
@@ -17,6 +14,8 @@ const Home = () => {
                 <h1>Flight Tracking Dashboard</h1>
             </header>
             <main className="home-main">
+                <section className="card">
+                <h2>Procedures</h2>
                 <div className="button-container">
                     <button onClick={() => navigate('/add-airplane')} className="dashboard-button">
                         Add Airplane
@@ -58,6 +57,31 @@ const Home = () => {
                         Simulation Cycle
                     </button>
                 </div>
+                </section>
+                
+                <section className="card">
+                <h2>Views</h2>
+                <div className="button-container">
+                    <button onClick={() => navigate('/view/flights-in-air')} className="dashboard-button">
+                    Flights in Air
+                    </button>
+                    <button onClick={() => navigate('/view/flights-on-ground')} className="dashboard-button">
+                    Flights on Ground
+                    </button>
+                    <button onClick={() => navigate('/view/people-in-air')} className="dashboard-button">
+                    People in Air
+                    </button>
+                    <button onClick={() => navigate('/view/people-on-ground')} className="dashboard-button">
+                    People on Ground
+                    </button>
+                    <button onClick={() => navigate('/view/route-summary')} className="dashboard-button">
+                    Route Summary
+                    </button>
+                    <button onClick={() => navigate('/view/alternate-airports')} className="dashboard-button">
+                    Alternate Airports
+                    </button>
+                </div>
+                </section>
             </main>
         </div>
     );
