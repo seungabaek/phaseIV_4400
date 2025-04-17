@@ -1,0 +1,55 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  background: #f9f9f9;
+  border-right: 1px solid #ddd;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.sidebar h2 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 5px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar li + li {
+  margin-top: 8px;
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: #0056b3;
+  display: block;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.sidebar a:hover {
+  background: #e6f0ff;
+}
+
+.sidebar a.active {
+  background: #dbe9ff;
+  font-weight: bold;
+  color: #003d80;
+}
+
+.content-area {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: #fff;
+}
