@@ -1,0 +1,97 @@
+/* src/pages/procedures/AddPersonLayout.css */
+
+.add-person-layout-container {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping */
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.add-person-form-section {
+    flex: 1 1 500px; /* Adjust flex-basis as needed */
+    min-width: 400px;
+}
+
+.table-section {
+    flex: 1 1 550px; /* Adjust flex-basis */
+    min-width: 500px;
+}
+
+/* Form grid adjustments */
+.add-person-form-section .procedure-form.person-form {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+     gap: 15px 20px;
+}
+
+/* Styling for the role fieldset */
+.add-person-form-section .role-fields {
+    grid-column: 1 / -1; /* Span full width */
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa; /* Slightly different background */
+}
+
+.add-person-form-section .role-fields legend {
+    font-weight: bold;
+    padding: 0 10px;
+    color: #555;
+}
+
+/* Arrange pilot/passenger groups side-by-side if possible */
+.add-person-form-section .role-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Two columns inside fieldset */
+    gap: 15px 25px;
+    align-items: start;
+}
+
+.add-person-form-section .role-group h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #34495e;
+    font-size: 1em;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+
+/* Ensure messages/actions span full width inside the main form grid */
+.add-person-form-section .procedure-form.person-form .full-width{
+     grid-column: 1 / -1;
+}
+
+/* Adjust table view section */
+.table-section .view-container {
+    margin-top: 0;
+}
+.table-section h3 {
+     text-align: center;
+     margin-bottom: 15px;
+     color: #34495e;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1100px) { /* Adjust breakpoint as needed */
+     .add-person-form-section .role-fields {
+        grid-template-columns: 1fr; /* Stack roles on smaller screens */
+    }
+}
+
+
+@media (max-width: 950px) {
+    .add-person-layout-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .add-person-form-section,
+    .table-section {
+        flex-basis: auto;
+        min-width: 100%;
+    }
+     .add-person-form-section { order: 1; }
+     .table-section { order: 2; }
+}

@@ -1,201 +1,212 @@
-// src/pages/procedures/AddAirport.jsx
+// src/pages/procedures/AddPerson.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import './FormStyles.css'; 
+import './FormStyles.css'; // Assuming you have common form styles
+// import '../Home.css'; // Uncomment if you use styles from Home.css like home-container
 
 const API_URL = 'http://localhost:8800';
 
-const AddAirplane = () => {
-    const [airplanes, setAirplanes] = useState([]);
+const AddPerson = () => {
+    // State for displaying existing persons
+    const [persons, setPersons] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState(null); // Error fetching persons
 
-    // add airplane form
-    const [newAirplane, setNewAirplane] = useState({
-        airlineID: '',
-        tail_num: '',
-        seat_capacity: '',
-        speed: '',
-        locationID: '', 
-        plane_type: '', 
-        maintenanced: false, 
-        model: '', 
-        neo: false 
+    // State for the add person form - matching schema columns
+    const [newPerson, setNewPerson] = useState({
+        personID: '',
+        first_name: '',
+        last_name: '', // Optional
+        locationID: ''
     });
-    const [addError, setAddError] = useState(null);
+    const [addError, setAddError] = useState(null); // Error adding person
     const [addSuccess, setAddSuccess] = useState(null);
 
-    // get airplanes
-    const fetchAirplanes = useCallback(async () => {
+    // Function to fetch persons
+    const fetchPersons = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            // need cors
-            const response = await axios.get(`${API_URL}/airplane`);
-            setAirplanes(response.data);
+            const response = await axios.get(`${API_URL}/person`);
+            setPersons(response.data);
         } catch (err) {
-            console.error("Error fetching airplanes:", err);
-            setError(err.response?.data?.message || "Failed to fetch airplanes. Is the backend running and CORS enabled?");
+            console.error("Error fetching persons:", err);
+            setError(err.response?.data?.message || "Failed to fetch persons. Is the backend running?");
         } finally {
             setLoading(false);
         }
     }, []);
 
-    // Fetch airplanes when the component mounts
+    // Fetch persons when the component mounts
     useEffect(() => {
-        fetchAirplanes();
-    }, [fetchAirplanes]); // Include fetchAirplanes in dependency array
+        fetchPersons();
+    }, [fetchPersons]);
 
-    // form input changes
+    // Handle form input changes
     const handleInputChange = (event) => {
-        const { name, value, type, checked } = event.target;
-        setNewAirplane(prev => ({
+        const { name, value } = event.target;
+        setNewPerson(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
         }));
+        // Clear messages when user starts typing again
+        if (addError || addSuccess) {
+            setAddError(null);
+            setAddSuccess(null);
+        }
     };
 
-    // form submission
-    const handleAddAirplane = async (event) => {
-        event.preventDefault(); // Prevent default page reload
+    // Handle form submission to add a new person
+    const handleAddPerson = async (event) => {
+        event.preventDefault();
         setAddError(null);
         setAddSuccess(null);
 
-        // Basic Validation (add more as needed)
-        if (!newAirplane.airlineID || !newAirplane.tail_num || !newAirplane.seat_capacity || !newAirplane.speed) {
-            setAddError("Please fill in all required fields (Airline ID, Tail Number, Seat Capacity, Speed).");
-            return;
-        }
-
-        // Convert numeric fields
-        const airplaneData = {
-            ...newAirplane,
-            seat_capacity: parseInt(newAirplane.seat_capacity, 10),
-            speed: parseInt(newAirplane.speed, 10),
-            // Ensure boolean values are sent correctly if needed
-            maintenanced: Boolean(newAirplane.maintenanced),
-            neo: Boolean(newAirplane.neo),
-            // Handle potentially empty optional fields (send null or omit)
-            locationID: newAirplane.locationID || null,
-            plane_type: newAirplane.plane_type || null,
-            model: newAirplane.model || null,
+        // Trim values before validation and sending
+        const trimmedPerson = {
+            personID: newPerson.personID.trim(),
+            first_name: newPerson.first_name.trim(),
+            last_name: newPerson.last_name.trim() || null, // Send null if empty or only whitespace
+            locationID: newPerson.locationID.trim()
         };
 
+        // Client-side validation based on schema (NOT NULL constraints)
+        if (!trimmedPerson.personID || !trimmedPerson.first_name || !trimmedPerson.locationID) {
+             setAddError('Please fill in all required fields (Person ID, First Name, Location ID).');
+             return;
+         }
+         // Optional: Add more specific validation if needed (e.g., locationID format)
+
+
         try {
-            // IMPORTANT: You need to create this POST endpoint in your backend
-            const response = await axios.post(`${API_URL}/airplane`, airplaneData);
-            setAddSuccess("Airplane added successfully!");
-            setNewAirplane({ // Clear the form
-                airlineID: '', tail_num: '', seat_capacity: '', speed: '',
-                locationID: '', plane_type: '', maintenanced: false, model: '', neo: false
+            const response = await axios.post(`${API_URL}/person`, trimmedPerson);
+            setAddSuccess(response.data.message || "Person added successfully!");
+            setNewPerson({ // Clear the form
+                personID: '', first_name: '', last_name: '', locationID: ''
             });
-            fetchAirplanes(); // Refresh the list
+            fetchPersons(); // Refresh the list of persons
         } catch (err) {
-            console.error("Error adding airplane:", err);
-            setAddError(err.response?.data?.message || "Failed to add airplane.");
+            console.error("Error adding person:", err);
+            // Display error message from backend response if available
+            setAddError(err.response?.data?.message || "Failed to add person. Please check inputs and backend connection.");
         }
     };
 
+
     return (
-        <div className="home-container">
-            <header className="home-header">
-                <h1>Flight Tracking Dashboard</h1>
+        <div className="home-container"> {/* Or your main container class */}
+            <header className="home-header"> {/* Optional: Keep header consistent */}
+                <h1>Flight Tracking Dashboard - Persons</h1>
             </header>
 
-            <main className="home-main">
-                {/* Section to Add New Airplane */}
-                <section className="card add-airplane-section">
-                    <h2>Add New Airplane</h2>
-                    <form onSubmit={handleAddAirplane} className="add-airplane-form">
+            <main className="home-main"> {/* Or your main content area class */}
+                {/* Section to Add New Person */}
+                <section className="card add-person-section">
+                    <h2>Add New Person</h2>
+                    <form onSubmit={handleAddPerson} className="procedure-form"> {/* Adjust class if needed */}
                         {/* Required Fields */}
                         <div className="form-group">
-                            <label htmlFor="airlineID">Airline ID *</label>
-                            <input type="text" id="airlineID" name="airlineID" value={newAirplane.airlineID} onChange={handleInputChange} required />
+                             {/* MaxLength from schema VARCHAR(50) */}
+                            <label htmlFor="personID">Person ID *</label>
+                            <input
+                                type="text"
+                                id="personID"
+                                name="personID"
+                                value={newPerson.personID}
+                                onChange={handleInputChange}
+                                maxLength="50"
+                                required
+                                placeholder="e.g., p57"
+                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="tail_num">Tail Number *</label>
-                            <input type="text" id="tail_num" name="tail_num" value={newAirplane.tail_num} onChange={handleInputChange} required />
+                             {/* MaxLength from schema VARCHAR(100) */}
+                            <label htmlFor="first_name">First Name *</label>
+                            <input
+                                type="text"
+                                id="first_name"
+                                name="first_name"
+                                value={newPerson.first_name}
+                                onChange={handleInputChange}
+                                maxLength="100"
+                                required
+                                placeholder="e.g., John"
+                            />
                         </div>
+                        {/* Optional Field */}
                         <div className="form-group">
-                            <label htmlFor="seat_capacity">Seat Capacity *</label>
-                            <input type="number" id="seat_capacity" name="seat_capacity" value={newAirplane.seat_capacity} onChange={handleInputChange} min="1" required />
+                            {/* MaxLength from schema VARCHAR(100) */}
+                            <label htmlFor="last_name">Last Name</label>
+                            <input
+                                type="text"
+                                id="last_name"
+                                name="last_name"
+                                value={newPerson.last_name}
+                                onChange={handleInputChange}
+                                maxLength="100"
+                                placeholder="e.g., Doe (Optional)"
+                            />
                         </div>
+                         {/* Required Field */}
                          <div className="form-group">
-                            <label htmlFor="speed">Speed *</label>
-                            <input type="number" id="speed" name="speed" value={newAirplane.speed} onChange={handleInputChange} min="1" required />
+                             {/* MaxLength from schema VARCHAR(50) */}
+                            <label htmlFor="locationID">Location ID *</label>
+                            <input
+                                type="text"
+                                id="locationID"
+                                name="locationID"
+                                value={newPerson.locationID}
+                                onChange={handleInputChange}
+                                maxLength="50"
+                                required
+                                placeholder="e.g., port_1 or plane_5"
+                            />
                         </div>
 
-                        {/* Optional Fields */}
-                        <div className="form-group">
-                            <label htmlFor="locationID">Location ID</label>
-                            <input type="text" id="locationID" name="locationID" value={newAirplane.locationID} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group">
-                            <label htmlFor="plane_type">Plane Type</label>
-                            <input type="text" id="plane_type" name="plane_type" value={newAirplane.plane_type} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group">
-                            <label htmlFor="model">Model</label>
-                            <input type="text" id="model" name="model" value={newAirplane.model} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group form-group-checkbox">
-                            <label htmlFor="maintenanced">Maintenanced?</label>
-                            <input type="checkbox" id="maintenanced" name="maintenanced" checked={newAirplane.maintenanced} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group form-group-checkbox">
-                            <label htmlFor="neo">Neo?</label>
-                            <input type="checkbox" id="neo" name="neo" checked={newAirplane.neo} onChange={handleInputChange} />
-                        </div>
-
+                        {/* Feedback Messages */}
                         {addError && <p className="error-message">{addError}</p>}
                         {addSuccess && <p className="success-message">{addSuccess}</p>}
 
-                        <button type="submit" className="submit-button">Add Airplane</button>
+                        {/* Form Actions */}
+                        <div className="form-actions">
+                            <button type="submit" className="submit-button">Add Person</button>
+                        </div>
                     </form>
                 </section>
 
-                {/* Section to Display Airplanes */}
-                <section className="card airplane-list-section">
-                    <h2>Airplane Fleet</h2>
-                    {loading && <p>Loading airplanes...</p>}
+                {/* Section to Display Existing Persons */}
+                <section className="card person-list-section">
+                    <h2>Existing Persons</h2>
+                    {loading && <p>Loading persons...</p>}
                     {error && <p className="error-message">{error}</p>}
                     {!loading && !error && (
                         <div className="table-container">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Airline ID</th>
-                                        <th>Tail Number</th>
-                                        <th>Capacity</th>
-                                        <th>Speed</th>
-                                        <th>Location</th>
-                                        <th>Type</th>
-                                        <th>Model</th>
-                                        <th>Maintenanced</th>
-                                        <th>Neo</th>
-                                        {/* Add more headers if needed */}
+                                        {/* Match headers to schema columns */}
+                                        <th>Person ID</th>
+                                        <th>First Name</th>
+                                        <th>Last Name</th>
+                                        <th>Location ID</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {airplanes.length > 0 ? (
-                                        airplanes.map((plane) => (
-                                            <tr key={`${plane.airlineID}-${plane.tail_num}`}>
-                                                <td>{plane.airlineID}</td>
-                                                <td>{plane.tail_num}</td>
-                                                <td>{plane.seat_capacity}</td>
-                                                <td>{plane.speed}</td>
-                                                <td>{plane.locationID || 'N/A'}</td>
-                                                <td>{plane.plane_type || 'N/A'}</td>
-                                                <td>{plane.model || 'N/A'}</td>
-                                                {/* Display boolean values nicely */}
-                                                <td>{plane.maintenanced ? 'Yes' : 'No'}</td>
-                                                <td>{plane.neo ? 'Yes' : 'No'}</td>
-                                                {/* Add more cells if needed */}
+                                    {persons.length > 0 ? (
+                                        persons.map((person) => (
+                                            // Use personID as key (it's the primary key)
+                                            <tr key={person.personID}>
+                                                <td>{person.personID}</td>
+                                                <td>{person.first_name}</td>
+                                                {/* Display 'N/A' or empty if last_name is null/empty */}
+                                                <td>{person.last_name || 'N/A'}</td>
+                                                <td>{person.locationID}</td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan="9">No airplanes found.</td>
+                                            {/* Adjust colSpan to match number of columns (4) */}
+                                            <td colSpan="4">No persons found in the database.</td>
                                         </tr>
                                     )}
                                 </tbody>
@@ -208,4 +219,4 @@ const AddAirplane = () => {
     );
 };
 
-export default AddAirplane;
+export default AddPerson;
