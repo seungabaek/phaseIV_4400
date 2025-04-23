@@ -256,6 +256,41 @@ app.post("/offer_flight", (req, res) => {
     });
 });
 
+// GET all flights in air
+app.get("/flights_in_the_air", (req, res) => {
+    const q = `
+        SELECT departing_from, arriving_at, num_flights, flight_list,
+		    earliest_arrival, latest_arrival, airplane_list
+        FROM flights_in_the_air
+    `;
+
+    db.query(q, (err, data) => {
+        if (err) {
+            console.error("Database Query Error (GET /flights_in_the_air):", err);
+            return res.status(500).json({ message: "Error fetching flights in air from database." });
+        }
+        console.log(data);
+        return res.json(data);
+    });
+});
+
+// GET all flights in air
+app.get("/flights_on_the_ground", (req, res) => {
+    const q = `
+        SELECT departing_from, num_flights, flight_list,
+                earliest_arrival, latest_arrival, airplane_list
+        FROM flights_on_the_ground
+    `;
+
+    db.query(q, (err, data) => {
+        if (err) {
+            console.error("Database Query Error (GET /flights_on_the_ground):", err);
+            return res.status(500).json({ message: "Error fetching flights in air from database." });
+        }
+        console.log(data);
+        return res.json(data);
+    });
+});
 
 app.post("/passengers_disembark", (req, res) => {
     const { flightID } = req.body;
