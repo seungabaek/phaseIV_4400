@@ -3,22 +3,25 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './FormStyles.css';
 
-
 const API_URL = 'http://localhost:8800';
 
 const AssignPilot = () => {
-const [pilots, setPilots] = useState([]);
-const [flights, setFlights] = useState([]);
-const [selectedPilotId, setSelectedPilotId] = useState('');
-const [loadingPilots, setLoadingPilots] = useState(false);
-const [loadingFlights, setLoadingFlights] = useState(false);
-const [fetchPilotsError, setFetchPilotsError] = useState(null);
-const [fetchFlightsError, setFetchFlightsError] = useState(null);
+    const [pilots, setPilots] = useState([]);
+    const [flights, setFlights] = useState([]);
 
-const [assigning, setAssigning] = useState(false);
-const [assignError, setAssignError] = useState(null);
-const [assignSuccess, setAssignSuccess] = useState(null);
-const fetchPilots = useCallback(async () => {
+    const [selectedPilotId, setSelectedPilotId] = useState('');
+    const [selectedFlightId, setSelectedFlightId] = useState('');
+
+    const [loadingPilots, setLoadingPilots] = useState(false);
+    const [loadingFlights, setLoadingFlights] = useState(false);
+    const [fetchPilotsError, setFetchPilotsError] = useState(null);
+    const [fetchFlightsError, setFetchFlightsError] = useState(null);
+
+    const [assigning, setAssigning] = useState(false);
+    const [assignError, setAssignError] = useState(null);
+    const [assignSuccess, setAssignSuccess] = useState(null);
+
+    const fetchPilots = useCallback(async () => {
         setLoadingPilots(true);
         setFetchPilotsError(null);
         try {
@@ -29,8 +32,7 @@ const fetchPilots = useCallback(async () => {
         } finally {
             setLoadingPilots(false);
         }
-}, []);
-    
+    }, []);
 
     const fetchFlights = useCallback(async () => {
         setLoadingFlights(true);
@@ -93,7 +95,6 @@ const fetchPilots = useCallback(async () => {
                 <section className="card assign-pilot-section">
                     <h2>Assign Pilot to Flight</h2>
                     <form onSubmit={handleAssignPilot} className="procedure-form">
-
                         <div className="form-group">
                             <label htmlFor="pilotSelect">Select Pilot *</label>
                             {loadingPilots && <p>Loading pilots...</p>}
@@ -106,7 +107,6 @@ const fetchPilots = useCallback(async () => {
                                     onChange={(e) => {
                                         setSelectedPilotId(e.target.value);
                                         setAssignError(null);
-
                                         setAssignSuccess(null);
                                     }}
                                     required
@@ -115,14 +115,14 @@ const fetchPilots = useCallback(async () => {
                                     {pilots.map(pilot => (
                                         <option key={pilot.personID} value={pilot.personID}>
                                             {`${pilot.last_name || ''}, ${pilot.first_name} (${pilot.personID})`}
-                    {pilot.commanding_flight ? ` [Cmd: ${pilot.commanding_flight}]` : ''}
+                                            {pilot.commanding_flight ? ` [Cmd: ${pilot.commanding_flight}]` : ''}
                                         </option>
                                     ))}
                                 </select>
                             )}
                         </div>
 
-                   <div className="form-group">
+                        <div className="form-group">
                             <label htmlFor="flightSelect">Select Flight to Assign *</label>
                             {loadingFlights && <p>Loading flights...</p>}
                             {fetchFlightsError && <p className="error-message">{fetchFlightsError}</p>}
@@ -134,13 +134,12 @@ const fetchPilots = useCallback(async () => {
                                     onChange={(e) => {
                                         setSelectedFlightId(e.target.value);
                                         setAssignError(null);
-                          setAssignSuccess(null);
+                                        setAssignSuccess(null);
                                     }}
                                     required
                                 >
                                     <option value="" disabled>-- Select Flight or Unassign --</option>
                                     <option value="UNASSIGN">-- Unassign Pilot --</option>
-
                                     {flights.map(flight => (
                                         <option key={flight.flightID} value={flight.flightID}>
                                             {`${flight.flightID} (Route: ${flight.routeID}, Status: ${flight.airplane_status || 'N/A'})`}
@@ -152,7 +151,6 @@ const fetchPilots = useCallback(async () => {
 
                         {assignError && <p className="error-message">{assignError}</p>}
                         {assignSuccess && <p className="success-message">{assignSuccess}</p>}
-
 
                         <div className="form-actions">
                             <button type="submit" className="submit-button" disabled={assigning || loadingPilots || loadingFlights}>
@@ -187,7 +185,6 @@ const fetchPilots = useCallback(async () => {
                         </div>
                     )}
                 </section>
-
             </main>
         </div>
     );
