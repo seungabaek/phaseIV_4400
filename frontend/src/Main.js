@@ -90,7 +90,7 @@ function Main() {
             <Route path="/assign-pilot" element={<AssignPilot />} /> 
             <Route path="/flight-landing" element={<FlightLanding />} /> 
             <Route path="/flight-takeoff" element={<FlightTakeoff />} /> 
-            <Route path="/grant-or-revoke" element={<GrantOrRevoke />} /> 
+            <Route path="/grant-revoke-license" element={<GrantOrRevoke />} /> 
             <Route path="/offer-flight" element={<OfferFlight />} /> 
             <Route path="/passengers-board" element={<PassengersBoard />} /> 
             <Route path="/passengers-disembark" element={<PassengersDisembark />} /> 

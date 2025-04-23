@@ -1,211 +1,222 @@
-// src/pages/procedures/AddAirport.jsx
+// src/pages/procedures/GrantRevokeLicense.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './FormStyles.css'; 
-
 const API_URL = 'http://localhost:8800';
 
-const AddAirplane = () => {
-    const [airplanes, setAirplanes] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+// Define the possible license types (could be fetched if dynamic)
+const AVAILABLE_LICENSE_TYPES = ['Airbus', 'Boeing', 'general']; // Based on sample data
 
-    // add airplane form
-    const [newAirplane, setNewAirplane] = useState({
-        airlineID: '',
-        tail_num: '',
-        seat_capacity: '',
-        speed: '',
-        locationID: '', 
-        plane_type: '', 
-        maintenanced: false, 
-        model: '', 
-        neo: false 
-    });
-    const [addError, setAddError] = useState(null);
-    const [addSuccess, setAddSuccess] = useState(null);
+const GrantRevokeLicense = () => {
+    // State for dropdown data
+    const [pilots, setPilots] = useState([]);
 
-    // get airplanes
-    const fetchAirplanes = useCallback(async () => {
-        setLoading(true);
-        setError(null);
+    // State for selections
+    const [selectedPilotId, setSelectedPilotId] = useState('');
+    const [selectedLicenseType, setSelectedLicenseType] = useState('');
+
+    // State for displaying current licenses
+    const [currentLicenses, setCurrentLicenses] = useState([]);
+    const [loadingLicenses, setLoadingLicenses] = useState(false);
+    const [fetchLicensesError, setFetchLicensesError] = useState(null);
+
+    // State for fetching pilots
+    const [loadingPilots, setLoadingPilots] = useState(false);
+    const [fetchPilotsError, setFetchPilotsError] = useState(null);
+
+    // State for grant/revoke process
+    const [processing, setProcessing] = useState(false);
+    const [processError, setProcessError] = useState(null);
+    const [processSuccess, setProcessSuccess] = useState(null);
+
+    // Fetch pilots
+    const fetchPilots = useCallback(async () => {
+        setLoadingPilots(true);
+        setFetchPilotsError(null);
         try {
-            // need cors
-            const response = await axios.get(`${API_URL}/airplane`);
-            setAirplanes(response.data);
+            // Re-use the existing /pilot endpoint if it includes names
+            const response = await axios.get(`${API_URL}/pilot`);
+            setPilots(response.data || []); // Ensure it's an array
         } catch (err) {
-            console.error("Error fetching airplanes:", err);
-            setError(err.response?.data?.message || "Failed to fetch airplanes. Is the backend running and CORS enabled?");
+            console.error("Error fetching pilots:", err);
+            setFetchPilotsError(err.response?.data?.message || "Failed to fetch pilots.");
         } finally {
-            setLoading(false);
+            setLoadingPilots(false);
         }
     }, []);
 
-    // Fetch airplanes when the component mounts
+    // Fetch current licenses for the selected pilot
+    const fetchCurrentLicenses = useCallback(async (pilotId) => {
+        if (!pilotId) {
+            setCurrentLicenses([]);
+            setFetchLicensesError(null);
+            return;
+        }
+        setLoadingLicenses(true);
+        setFetchLicensesError(null);
+        try {
+            const response = await axios.get(`${API_URL}/pilot/${pilotId}/licenses`);
+            setCurrentLicenses(response.data || []); // Expecting an array of strings
+        } catch (err) {
+            console.error("Error fetching licenses:", err);
+            setCurrentLicenses([]);
+            setFetchLicensesError(err.response?.data?.message || `Failed to fetch licenses for pilot ${pilotId}.`);
+        } finally {
+            setLoadingLicenses(false);
+        }
+    }, []);
+
+    // Fetch pilots on mount
     useEffect(() => {
-        fetchAirplanes();
-    }, [fetchAirplanes]); // Include fetchAirplanes in dependency array
+        fetchPilots();
+    }, [fetchPilots]);
 
-    // form input changes
-    const handleInputChange = (event) => {
-        const { name, value, type, checked } = event.target;
-        setNewAirplane(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-    };
+    // Fetch licenses when selected pilot changes
+    useEffect(() => {
+        fetchCurrentLicenses(selectedPilotId);
+    }, [selectedPilotId, fetchCurrentLicenses]); // Re-fetch when pilot changes
 
-    // form submission
-    const handleAddAirplane = async (event) => {
-        event.preventDefault(); // Prevent default page reload
-        setAddError(null);
-        setAddSuccess(null);
 
-        // Basic Validation (add more as needed)
-        if (!newAirplane.airlineID || !newAirplane.tail_num || !newAirplane.seat_capacity || !newAirplane.speed) {
-            setAddError("Please fill in all required fields (Airline ID, Tail Number, Seat Capacity, Speed).");
+    // Handle grant/revoke submission
+    const handleGrantRevoke = async (event) => {
+        event.preventDefault();
+        setProcessError(null);
+        setProcessSuccess(null);
+
+        if (!selectedPilotId || !selectedLicenseType) {
+            setProcessError("Please select both a pilot and a license type.");
             return;
         }
 
-        // Convert numeric fields
-        const airplaneData = {
-            ...newAirplane,
-            seat_capacity: parseInt(newAirplane.seat_capacity, 10),
-            speed: parseInt(newAirplane.speed, 10),
-            // Ensure boolean values are sent correctly if needed
-            maintenanced: Boolean(newAirplane.maintenanced),
-            neo: Boolean(newAirplane.neo),
-            // Handle potentially empty optional fields (send null or omit)
-            locationID: newAirplane.locationID || null,
-            plane_type: newAirplane.plane_type || null,
-            model: newAirplane.model || null,
-        };
+        setProcessing(true);
 
         try {
-            // IMPORTANT: You need to create this POST endpoint in your backend
-            const response = await axios.post(`${API_URL}/airplane`, airplaneData);
-            setAddSuccess("Airplane added successfully!");
-            setNewAirplane({ // Clear the form
-                airlineID: '', tail_num: '', seat_capacity: '', speed: '',
-                locationID: '', plane_type: '', maintenanced: false, model: '', neo: false
-            });
-            fetchAirplanes(); // Refresh the list
+            const response = await axios.post(
+                `${API_URL}/pilot/${selectedPilotId}/toggleLicense`,
+                { license: selectedLicenseType } // Send license type in body
+            );
+            setProcessSuccess(response.data.message || "License status updated successfully!");
+
+            // Refresh the current licenses display for the selected pilot
+            fetchCurrentLicenses(selectedPilotId);
+
+            // Optionally clear the license type selection
+            // setSelectedLicenseType('');
+
         } catch (err) {
-            console.error("Error adding airplane:", err);
-            setAddError(err.response?.data?.message || "Failed to add airplane.");
+            console.error("Error updating license:", err);
+            setProcessError(err.response?.data?.message || "Failed to update license status.");
+        } finally {
+            setProcessing(false);
         }
     };
 
+    // Helper function to render current licenses
+    const renderCurrentLicenses = () => {
+        if (loadingLicenses) return <p>Loading licenses...</p>;
+        if (fetchLicensesError) return <p className="error-message">{fetchLicensesError}</p>;
+        if (!selectedPilotId) return <p>Select a pilot to view their licenses.</p>;
+        if (currentLicenses.length === 0) return <p>This pilot currently holds no licenses.</p>;
+
+        return (
+            <ul>
+                {currentLicenses.map(lic => <li key={lic}>{lic}</li>)}
+            </ul>
+        );
+    };
+
+
     return (
-        <div className="home-container">
+        <div className="home-container"> {/* Or your main container class */}
             <header className="home-header">
-                <h1>Flight Tracking Dashboard</h1>
+                <h1>Flight Tracking Dashboard - Grant/Revoke Pilot License</h1>
             </header>
 
-            <main className="home-main">
-                {/* Section to Add New Airplane */}
-                <section className="card add-airplane-section">
-                    <h2>Add New Airplane</h2>
-                    <form onSubmit={handleAddAirplane} className="add-airplane-form">
-                        {/* Required Fields */}
+            <main className="home-main grant-revoke-layout"> {/* Use a layout class */}
+                {/* Left side: Form */}
+                <section className="card grant-revoke-form-section">
+                    <h2>Select Pilot and License</h2>
+                    <form onSubmit={handleGrantRevoke} className="procedure-form">
+                        {/* Pilot Selection Dropdown */}
                         <div className="form-group">
-                            <label htmlFor="airlineID">Airline ID *</label>
-                            <input type="text" id="airlineID" name="airlineID" value={newAirplane.airlineID} onChange={handleInputChange} required />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="tail_num">Tail Number *</label>
-                            <input type="text" id="tail_num" name="tail_num" value={newAirplane.tail_num} onChange={handleInputChange} required />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="seat_capacity">Seat Capacity *</label>
-                            <input type="number" id="seat_capacity" name="seat_capacity" value={newAirplane.seat_capacity} onChange={handleInputChange} min="1" required />
-                        </div>
-                         <div className="form-group">
-                            <label htmlFor="speed">Speed *</label>
-                            <input type="number" id="speed" name="speed" value={newAirplane.speed} onChange={handleInputChange} min="1" required />
+                            <label htmlFor="pilotSelect">Select Pilot *</label>
+                            {loadingPilots && <p>Loading pilots...</p>}
+                            {fetchPilotsError && <p className="error-message">{fetchPilotsError}</p>}
+                            {!loadingPilots && !fetchPilotsError && (
+                                <select
+                                    id="pilotSelect"
+                                    name="selectedPilotId"
+                                    value={selectedPilotId}
+                                    onChange={(e) => {
+                                        setSelectedPilotId(e.target.value);
+                                        setProcessError(null); // Clear messages on change
+                                        setProcessSuccess(null);
+                                        setSelectedLicenseType(''); // Reset license selection too
+                                    }}
+                                    required
+                                >
+                                    <option value="" disabled>-- Select a Pilot --</option>
+                                    {pilots.map(pilot => (
+                                        <option key={pilot.personID} value={pilot.personID}>
+                                            {`${pilot.last_name || ''}, ${pilot.first_name} (${pilot.personID})`}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
 
-                        {/* Optional Fields */}
+                        {/* License Type Selection Dropdown */}
                         <div className="form-group">
-                            <label htmlFor="locationID">Location ID</label>
-                            <input type="text" id="locationID" name="locationID" value={newAirplane.locationID} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group">
-                            <label htmlFor="plane_type">Plane Type</label>
-                            <input type="text" id="plane_type" name="plane_type" value={newAirplane.plane_type} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group">
-                            <label htmlFor="model">Model</label>
-                            <input type="text" id="model" name="model" value={newAirplane.model} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group form-group-checkbox">
-                            <label htmlFor="maintenanced">Maintenanced?</label>
-                            <input type="checkbox" id="maintenanced" name="maintenanced" checked={newAirplane.maintenanced} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group form-group-checkbox">
-                            <label htmlFor="neo">Neo?</label>
-                            <input type="checkbox" id="neo" name="neo" checked={newAirplane.neo} onChange={handleInputChange} />
+                            <label htmlFor="licenseSelect">Select License Type *</label>
+                             <select
+                                id="licenseSelect"
+                                name="selectedLicenseType"
+                                value={selectedLicenseType}
+                                onChange={(e) => {
+                                     setSelectedLicenseType(e.target.value);
+                                     setProcessError(null); // Clear messages
+                                     setProcessSuccess(null);
+                                 }}
+                                disabled={!selectedPilotId} // Disable until pilot is selected
+                                required
+                            >
+                                <option value="" disabled>-- Select License --</option>
+                                {AVAILABLE_LICENSE_TYPES.map(type => (
+                                    <option key={type} value={type}>{type}</option>
+                                ))}
+                            </select>
                         </div>
 
-                        {addError && <p className="error-message">{addError}</p>}
-                        {addSuccess && <p className="success-message">{addSuccess}</p>}
+                        {/* Feedback Messages */}
+                        {processError && <p className="error-message">{processError}</p>}
+                        {processSuccess && <p className="success-message">{processSuccess}</p>}
 
-                        <button type="submit" className="submit-button">Add Airplane</button>
+                        {/* Submit Button */}
+                        <div className="form-actions">
+                            <button
+                                type="submit"
+                                className="submit-button"
+                                disabled={processing || loadingPilots || !selectedPilotId || !selectedLicenseType}
+                            >
+                                {processing ? 'Processing...' : 'Grant / Revoke Selected License'}
+                            </button>
+                        </div>
+                        <p style={{ marginTop: '10px', fontSize: '0.9em', color: '#555' }}>
+                            Note: This action will ADD the license if the pilot doesn't have it,
+                            and REMOVE it if they do.
+                        </p>
                     </form>
                 </section>
 
-                {/* Section to Display Airplanes */}
-                <section className="card airplane-list-section">
-                    <h2>Airplane Fleet</h2>
-                    {loading && <p>Loading airplanes...</p>}
-                    {error && <p className="error-message">{error}</p>}
-                    {!loading && !error && (
-                        <div className="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Airline ID</th>
-                                        <th>Tail Number</th>
-                                        <th>Capacity</th>
-                                        <th>Speed</th>
-                                        <th>Location</th>
-                                        <th>Type</th>
-                                        <th>Model</th>
-                                        <th>Maintenanced</th>
-                                        <th>Neo</th>
-                                        {/* Add more headers if needed */}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {airplanes.length > 0 ? (
-                                        airplanes.map((plane) => (
-                                            <tr key={`${plane.airlineID}-${plane.tail_num}`}>
-                                                <td>{plane.airlineID}</td>
-                                                <td>{plane.tail_num}</td>
-                                                <td>{plane.seat_capacity}</td>
-                                                <td>{plane.speed}</td>
-                                                <td>{plane.locationID || 'N/A'}</td>
-                                                <td>{plane.plane_type || 'N/A'}</td>
-                                                <td>{plane.model || 'N/A'}</td>
-                                                {/* Display boolean values nicely */}
-                                                <td>{plane.maintenanced ? 'Yes' : 'No'}</td>
-                                                <td>{plane.neo ? 'Yes' : 'No'}</td>
-                                                {/* Add more cells if needed */}
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="9">No airplanes found.</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </section>
+                {/* Right side: Current Licenses Display */}
+                <section className="card current-licenses-section">
+                     <h2>Current Licenses for Selected Pilot</h2>
+                     {renderCurrentLicenses()}
+                 </section>
+
             </main>
         </div>
     );
 };
 
-export default AddAirplane;
+export default GrantRevokeLicense;
