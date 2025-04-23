@@ -1,4 +1,3 @@
-// src/pages/procedures/AddAirport.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './FormStyles.css'; 
@@ -9,8 +8,6 @@ const AddAirplane = () => {
     const [airplanes, setAirplanes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-
-    // add airplane form
     const [newAirplane, setNewAirplane] = useState({
         airlineID: '',
         tail_num: '',
@@ -25,12 +22,10 @@ const AddAirplane = () => {
     const [addError, setAddError] = useState(null);
     const [addSuccess, setAddSuccess] = useState(null);
 
-    // get airplanes
     const fetchAirplanes = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            // need cors
             const response = await axios.get(`${API_URL}/airplane`);
             setAirplanes(response.data);
         } catch (err) {
@@ -41,12 +36,10 @@ const AddAirplane = () => {
         }
     }, []);
 
-    // Fetch airplanes when the component mounts
     useEffect(() => {
         fetchAirplanes();
-    }, [fetchAirplanes]); // Include fetchAirplanes in dependency array
+    }, [fetchAirplanes]); 
 
-    // form input changes
     const handleInputChange = (event) => {
         const { name, value, type, checked } = event.target;
         setNewAirplane(prev => ({
@@ -55,41 +48,35 @@ const AddAirplane = () => {
         }));
     };
 
-    // form submission
     const handleAddAirplane = async (event) => {
-        event.preventDefault(); // Prevent default page reload
+        event.preventDefault(); 
         setAddError(null);
         setAddSuccess(null);
 
-        // Basic Validation (add more as needed)
         if (!newAirplane.airlineID || !newAirplane.tail_num || !newAirplane.seat_capacity || !newAirplane.speed) {
             setAddError("Please fill in all required fields (Airline ID, Tail Number, Seat Capacity, Speed).");
             return;
         }
 
-        // Convert numeric fields
         const airplaneData = {
             ...newAirplane,
             seat_capacity: parseInt(newAirplane.seat_capacity, 10),
             speed: parseInt(newAirplane.speed, 10),
-            // Ensure boolean values are sent correctly if needed
             maintenanced: Boolean(newAirplane.maintenanced),
             neo: Boolean(newAirplane.neo),
-            // Handle potentially empty optional fields (send null or omit)
             locationID: newAirplane.locationID || null,
             plane_type: newAirplane.plane_type || null,
             model: newAirplane.model || null,
         };
 
         try {
-            // IMPORTANT: You need to create this POST endpoint in your backend
             const response = await axios.post(`${API_URL}/airplane`, airplaneData);
             setAddSuccess("Airplane added successfully!");
-            setNewAirplane({ // Clear the form
+            setNewAirplane({ 
                 airlineID: '', tail_num: '', seat_capacity: '', speed: '',
                 locationID: '', plane_type: '', maintenanced: false, model: '', neo: false
             });
-            fetchAirplanes(); // Refresh the list
+            fetchAirplanes();
         } catch (err) {
             console.error("Error adding airplane:", err);
             setAddError(err.response?.data?.message || "Failed to add airplane.");
@@ -103,11 +90,9 @@ const AddAirplane = () => {
             </header>
 
             <main className="home-main">
-                {/* Section to Add New Airplane */}
                 <section className="card add-airplane-section">
                     <h2>Add New Airplane</h2>
                     <form onSubmit={handleAddAirplane} className="add-airplane-form">
-                        {/* Required Fields */}
                         <div className="form-group">
                             <label htmlFor="airlineID">Airline ID *</label>
                             <input type="text" id="airlineID" name="airlineID" value={newAirplane.airlineID} onChange={handleInputChange} required />
@@ -125,7 +110,6 @@ const AddAirplane = () => {
                             <input type="number" id="speed" name="speed" value={newAirplane.speed} onChange={handleInputChange} min="1" required />
                         </div>
 
-                        {/* Optional Fields */}
                         <div className="form-group">
                             <label htmlFor="locationID">Location ID</label>
                             <input type="text" id="locationID" name="locationID" value={newAirplane.locationID} onChange={handleInputChange} />
@@ -154,7 +138,6 @@ const AddAirplane = () => {
                     </form>
                 </section>
 
-                {/* Section to Display Airplanes */}
                 <section className="card airplane-list-section">
                     <h2>Airplane Fleet</h2>
                     {loading && <p>Loading airplanes...</p>}
@@ -173,7 +156,6 @@ const AddAirplane = () => {
                                         <th>Model</th>
                                         <th>Maintenanced</th>
                                         <th>Neo</th>
-                                        {/* Add more headers if needed */}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -187,10 +169,7 @@ const AddAirplane = () => {
                                                 <td>{plane.locationID || 'N/A'}</td>
                                                 <td>{plane.plane_type || 'N/A'}</td>
                                                 <td>{plane.model || 'N/A'}</td>
-                                                {/* Display boolean values nicely */}
-                                                <td>{plane.maintenanced ? 'Yes' : 'No'}</td>
                                                 <td>{plane.neo ? 'Yes' : 'No'}</td>
-                                                {/* Add more cells if needed */}
                                             </tr>
                                         ))
                                     ) : (

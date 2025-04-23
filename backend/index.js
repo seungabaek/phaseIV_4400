@@ -548,6 +548,84 @@ app.post("/pilot/:personId/toggleLicense", (req, res) => {
     });
 });
 
+app.post("/flight_takeoff", (req, res) => {
+    const { flightID } = req.body;
+    if (!flightID || flightID.trim() === "") {
+        return res.status(400).json({ message: "Flight ID is required." });
+    }
+
+    db.query(`CALL flight_takeoff(?)`, [flightID], (err) => {
+        if (err) {
+            console.error("Database Query Error (POST /flight_takeoff):", err);
+            return res.status(500).json({ message: "Error initiating takeoff." });
+        }
+        return res.status(200).json({ message: `Flight '${flightID}' took off successfully.` });
+    });
+});
+
+app.post("/flight_landing", (req, res) => {
+    const { flightID } = req.body;
+    if (!flightID || flightID.trim() === "") {
+        return res.status(400).json({ message: "Flight ID is required." });
+    }
+
+    db.query(`CALL flight_landing(?)`, [flightID], (err) => {
+        if (err) {
+            console.error("Database Query Error (POST /flight_landing):", err);
+            return res.status(500).json({ message: "Error landing flight." });
+        }
+        return res.status(200).json({ message: `Flight '${flightID}' landed successfully.` });
+    });
+});
+
+app.post("/recycle_crew", (req, res) => {
+    const { flightID } = req.body;
+    if (!flightID || flightID.trim() === "") {
+        return res.status(400).json({ message: "Flight ID is required." });
+    }
+
+    db.query(`CALL recycle_crew(?)`, [flightID], (err) => {
+        if (err) {
+            console.error("Database Query Error (POST /recycle_crew):", err);
+            return res.status(500).json({ message: "Error recycling crew." });
+        }
+        return res.status(200).json({ message: `Crew for flight '${flightID}' recycled successfully.` });
+    });
+});
+
+app.post("/retire_flight", (req, res) => {
+    const { flightID } = req.body;
+
+    if (!flightID || flightID.trim() === "") {
+        return res.status(400).json({ message: "Flight ID is required and cannot be empty." });
+    }
+
+    db.query(`CALL retire_flight(?)`, [flightID], (err) => {
+        if (err) {
+            console.error("Database Query Error (POST /retire_flight):", err);
+            return res.status(500).json({ message: "Error retiring flight." });
+        }
+
+        return res.status(200).json({ message: "Flight retired successfully!" });
+    });
+});
+
+
+
+
+
+app.post("/simulation_cycle", (req, res) => {
+    const q = `CALL simulation_cycle();`;
+    db.query(q, (err) => {
+        if (err) {
+            console.error("Database Query Error (POST /simulation_cycle):", err);
+            return res.status(500).json({ message: "Error executing simulation cycle." });
+        }
+        return res.status(200).json({ message: "Simulation cycle executed successfully." });
+    });
+});
+
+
 
 const PORT = 8800;
 app.listen(PORT, () => {
