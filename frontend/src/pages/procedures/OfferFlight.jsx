@@ -1,4 +1,3 @@
-// src/pages/procedures/AddAirport.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './FormStyles.css'; 
@@ -6,93 +5,85 @@ import './FormStyles.css';
 const API_URL = 'http://localhost:8800';
 
 const AddAirplane = () => {
-    const [airplanes, setAirplanes] = useState([]);
+    const [flights, setFlights] = useState([]); 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // add airplane form
-    const [newAirplane, setNewAirplane] = useState({
-        airlineID: '',
-        tail_num: '',
-        seat_capacity: '',
-        speed: '',
-        locationID: '', 
-        plane_type: '', 
-        maintenanced: false, 
-        model: '', 
-        neo: false 
+    const [newFlight, setNewFlight] = useState({
+        flightID: '',
+        routeID: '',
+        progress: '',
+        nextTime: '',
+        cost: '',
+        supportAirline: '',
+        supportTail: ''
     });
+
     const [addError, setAddError] = useState(null);
     const [addSuccess, setAddSuccess] = useState(null);
 
-    // get airplanes
-    const fetchAirplanes = useCallback(async () => {
+    const fetchFlights = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            // need cors
-            const response = await axios.get(`${API_URL}/airplane`);
-            setAirplanes(response.data);
+            const response = await axios.get(`${API_URL}/flight`); 
+            setFlights(response.data);
         } catch (err) {
-            console.error("Error fetching airplanes:", err);
-            setError(err.response?.data?.message || "Failed to fetch airplanes. Is the backend running and CORS enabled?");
+            console.error("Error fetching flights:", err);
+            setError(err.response?.data?.message || "Failed to fetch flights. Is the backend running and CORS enabled?");
         } finally {
             setLoading(false);
         }
     }, []);
 
-    // Fetch airplanes when the component mounts
     useEffect(() => {
-        fetchAirplanes();
-    }, [fetchAirplanes]); // Include fetchAirplanes in dependency array
+        fetchFlights();
+    }, [fetchFlights]); 
 
-    // form input changes
     const handleInputChange = (event) => {
-        const { name, value, type, checked } = event.target;
-        setNewAirplane(prev => ({
+        const { name, value } = event.target;
+        setNewFlight((prev) => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
         }));
     };
 
-    // form submission
     const handleAddAirplane = async (event) => {
-        event.preventDefault(); // Prevent default page reload
+        event.preventDefault();
         setAddError(null);
         setAddSuccess(null);
 
-        // Basic Validation (add more as needed)
-        if (!newAirplane.airlineID || !newAirplane.tail_num || !newAirplane.seat_capacity || !newAirplane.speed) {
-            setAddError("Please fill in all required fields (Airline ID, Tail Number, Seat Capacity, Speed).");
+        if (!newFlight.flightID || !newFlight.routeID || !newFlight.progress || !newFlight.nextTime || !newFlight.cost) {
+            setAddError("Please fill in all required fields.");
             return;
         }
 
-        // Convert numeric fields
-        const airplaneData = {
-            ...newAirplane,
-            seat_capacity: parseInt(newAirplane.seat_capacity, 10),
-            speed: parseInt(newAirplane.speed, 10),
-            // Ensure boolean values are sent correctly if needed
-            maintenanced: Boolean(newAirplane.maintenanced),
-            neo: Boolean(newAirplane.neo),
-            // Handle potentially empty optional fields (send null or omit)
-            locationID: newAirplane.locationID || null,
-            plane_type: newAirplane.plane_type || null,
-            model: newAirplane.model || null,
+        const flightData = {
+            flightID: newFlight.flightID,
+            routeID: newFlight.routeID,
+            progress: parseInt(newFlight.progress, 10),
+            nextTime: newFlight.nextTime,
+            cost: parseInt(newFlight.cost, 10),
+            supportAirline: newFlight.supportAirline || null,
+            supportTail: newFlight.supportTail || null
         };
 
         try {
-            // IMPORTANT: You need to create this POST endpoint in your backend
-            const response = await axios.post(`${API_URL}/airplane`, airplaneData);
-            setAddSuccess("Airplane added successfully!");
-            setNewAirplane({ // Clear the form
-                airlineID: '', tail_num: '', seat_capacity: '', speed: '',
-                locationID: '', plane_type: '', maintenanced: false, model: '', neo: false
+            const response = await axios.post("http://localhost:8800/offer_flight", flightData);
+            setAddSuccess("Flight offered successfully!");
+            setNewFlight({
+                flightID: '',
+                routeID: '',
+                progress: '',
+                nextTime: '',
+                cost: '',
+                supportAirline: '',
+                supportTail: ''
             });
-            fetchAirplanes(); // Refresh the list
+            fetchFlights(); 
         } catch (err) {
-            console.error("Error adding airplane:", err);
-            setAddError(err.response?.data?.message || "Failed to add airplane.");
+            console.error("Error offering flight:", err);
+            setAddError(err.response?.data?.message || "Failed to offer flight.");
         }
     };
 
@@ -103,99 +94,83 @@ const AddAirplane = () => {
             </header>
 
             <main className="home-main">
-                {/* Section to Add New Airplane */}
                 <section className="card add-airplane-section">
-                    <h2>Add New Airplane</h2>
+                    <h2>Offer Flight</h2>
                     <form onSubmit={handleAddAirplane} className="add-airplane-form">
-                        {/* Required Fields */}
+
                         <div className="form-group">
-                            <label htmlFor="airlineID">Airline ID *</label>
-                            <input type="text" id="airlineID" name="airlineID" value={newAirplane.airlineID} onChange={handleInputChange} required />
+                            <label htmlFor="flightID">Flight ID *</label>
+                            <input type="text" id="flightID" name="flightID" value={newFlight.flightID} onChange={handleInputChange} required />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="tail_num">Tail Number *</label>
-                            <input type="text" id="tail_num" name="tail_num" value={newAirplane.tail_num} onChange={handleInputChange} required />
+                            <label htmlFor="routeID">Route ID *</label>
+                            <input type="text" id="routeID" name="routeID" value={newFlight.routeID} onChange={handleInputChange} required />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="seat_capacity">Seat Capacity *</label>
-                            <input type="number" id="seat_capacity" name="seat_capacity" value={newAirplane.seat_capacity} onChange={handleInputChange} min="1" required />
+                            <label htmlFor="progress">Progress *</label>
+                            <input type="number" id="progress" name="progress" value={newFlight.progress} onChange={handleInputChange} required />
                         </div>
-                         <div className="form-group">
-                            <label htmlFor="speed">Speed *</label>
-                            <input type="number" id="speed" name="speed" value={newAirplane.speed} onChange={handleInputChange} min="1" required />
+                        <div className="form-group">
+                            <label htmlFor="nextTime">Next Time *</label>
+                            <input type="time" id="nextTime" name="nextTime" value={newFlight.nextTime} onChange={handleInputChange} required />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="cost">Cost *</label>
+                            <input type="number" id="cost" name="cost" value={newFlight.cost} onChange={handleInputChange} required />
                         </div>
 
-                        {/* Optional Fields */}
+                
                         <div className="form-group">
-                            <label htmlFor="locationID">Location ID</label>
-                            <input type="text" id="locationID" name="locationID" value={newAirplane.locationID} onChange={handleInputChange} />
+                            <label htmlFor="supportAirline">Support Airline</label>
+                            <input type="text" id="supportAirline" name="supportAirline" value={newFlight.supportAirline} onChange={handleInputChange} />
                         </div>
-                         <div className="form-group">
-                            <label htmlFor="plane_type">Plane Type</label>
-                            <input type="text" id="plane_type" name="plane_type" value={newAirplane.plane_type} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group">
-                            <label htmlFor="model">Model</label>
-                            <input type="text" id="model" name="model" value={newAirplane.model} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group form-group-checkbox">
-                            <label htmlFor="maintenanced">Maintenanced?</label>
-                            <input type="checkbox" id="maintenanced" name="maintenanced" checked={newAirplane.maintenanced} onChange={handleInputChange} />
-                        </div>
-                         <div className="form-group form-group-checkbox">
-                            <label htmlFor="neo">Neo?</label>
-                            <input type="checkbox" id="neo" name="neo" checked={newAirplane.neo} onChange={handleInputChange} />
+                        <div className="form-group">
+                            <label htmlFor="supportTail">Support Tail</label>
+                            <input type="text" id="supportTail" name="supportTail" value={newFlight.supportTail} onChange={handleInputChange} />
                         </div>
 
                         {addError && <p className="error-message">{addError}</p>}
                         {addSuccess && <p className="success-message">{addSuccess}</p>}
 
-                        <button type="submit" className="submit-button">Add Airplane</button>
+                        <button type="submit" className="submit-button">Offer Flight</button>
                     </form>
                 </section>
 
-                {/* Section to Display Airplanes */}
+                {/* Section to Display Flights */}
                 <section className="card airplane-list-section">
-                    <h2>Airplane Fleet</h2>
-                    {loading && <p>Loading airplanes...</p>}
+                    <h2>Flight List</h2>
+                    {loading && <p>Loading flights...</p>}
                     {error && <p className="error-message">{error}</p>}
                     {!loading && !error && (
                         <div className="table-container">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Airline ID</th>
-                                        <th>Tail Number</th>
-                                        <th>Capacity</th>
-                                        <th>Speed</th>
-                                        <th>Location</th>
-                                        <th>Type</th>
-                                        <th>Model</th>
-                                        <th>Maintenanced</th>
-                                        <th>Neo</th>
-                                        {/* Add more headers if needed */}
+                                        <th>Flight ID</th>
+                                        <th>Route ID</th>
+                                        <th>Progress</th>
+                                        <th>Next Time</th>
+                                        <th>Cost</th>
+                                        <th>Support Airline</th>
+                                        <th>Support Tail</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {airplanes.length > 0 ? (
-                                        airplanes.map((plane) => (
-                                            <tr key={`${plane.airlineID}-${plane.tail_num}`}>
-                                                <td>{plane.airlineID}</td>
-                                                <td>{plane.tail_num}</td>
-                                                <td>{plane.seat_capacity}</td>
-                                                <td>{plane.speed}</td>
-                                                <td>{plane.locationID || 'N/A'}</td>
-                                                <td>{plane.plane_type || 'N/A'}</td>
-                                                <td>{plane.model || 'N/A'}</td>
-                                                {/* Display boolean values nicely */}
-                                                <td>{plane.maintenanced ? 'Yes' : 'No'}</td>
-                                                <td>{plane.neo ? 'Yes' : 'No'}</td>
-                                                {/* Add more cells if needed */}
+                                    {flights.length > 0 ? (
+                                        flights.map((flight) => (
+                                            <tr key={flight.flightID}>
+                                                <td>{flight.flightID}</td>
+                                                <td>{flight.routeID}</td>
+                                                <td>{flight.progress}</td>
+                                                <td>{flight.nextTime}</td>
+                                                <td>{flight.cost}</td>
+                                                <td>{flight.supportAirline || 'N/A'}</td>
+                                                <td>{flight.supportTail || 'N/A'}</td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan="9">No airplanes found.</td>
+                                            <td colSpan="7">No flights found.</td>
                                         </tr>
                                     )}
                                 </tbody>
