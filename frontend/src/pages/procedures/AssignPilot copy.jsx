@@ -159,32 +159,6 @@ const AssignPilot = () => {
                         </div>
                     </form>
                 </section>
-
-                <section className="card airplane-list-section">
-                    <h2>Current Flights</h2>
-                    {loadingFlights ? <p>Loading flights...</p> : (
-                        <div className="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Flight ID</th>
-                                        <th>Route ID</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {flights.map((f) => (
-                                        <tr key={f.flightID}>
-                                            <td>{f.flightID}</td>
-                                            <td>{f.routeID}</td>
-                                            <td>{f.airplane_status}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </section>
             </main>
         </div>
     );

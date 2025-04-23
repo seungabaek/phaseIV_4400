@@ -35,7 +35,7 @@ const Home = () => {
                     <button onClick={() => navigate('/flight-takeoff')} className="dashboard-button">
                         Flight Takeoff
                     </button>
-                    <button onClick={() => navigate('/grant-or-revoke')} className="dashboard-button">
+                    <button onClick={() => navigate('/grant-revoke-license')} className="dashboard-button">
                         Grant or Revoke Pilot License 
                     </button>
                     <button onClick={() => navigate('/offer-flight')} className="dashboard-button">
