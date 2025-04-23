@@ -205,6 +205,215 @@ app.get("/flight", (req, res) => {
     });
 });
 
+app.get("/flight", (req, res) => {
+    const q = `
+        SELECT 
+            flightID, 
+            routeID, 
+            progress, 
+            next_time AS nextTime, 
+            cost, 
+            support_airline AS supportAirline, 
+            support_tail AS supportTail 
+        FROM flight
+        ORDER BY flightID;
+    `;
+
+    db.query(q, (err, data) => {
+        if (err) {
+            console.error("Database Query Error (GET /flight):", err);
+            return res.status(500).json({ message: "Error fetching flights from the database." });
+        }
+        return res.json(data);
+    });
+});
+
+app.post("/offer_flight", (req, res) => {
+    const { flightID, routeID, supportAirline, supportTail, progress, nextTime, cost } = req.body;
+
+    if (!flightID || !routeID || progress == null || !nextTime || cost == null) {
+        return res.status(400).json({ message: "Missing required fields: flightID, routeID, progress, nextTime, cost" });
+    }
+
+    const q = `CALL offer_flight(?, ?, ?, ?, ?, ?, ?)`;
+    const values = [flightID, routeID, supportAirline || null, supportTail || null, progress, nextTime, cost];
+
+    db.query(q, values, (err, result) => {
+        if (err) {
+            console.error("Database Query Error (POST /offer_flight):", err);
+
+            if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+                return res.status(400).json({ message: "Invalid route or airplane." });
+            }
+            return res.status(500).json({ message: "Error offering flight." });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(400).json({ message: "Flight could not be offered due to invalid data." });
+        }
+
+        return res.status(201).json({ message: "Flight offered successfully!" });
+    });
+});
+
+
+app.post("/passengers_disembark", (req, res) => {
+    const { flightID } = req.body;
+
+    if (!flightID || flightID.trim() === "") {
+        return res.status(400).json({ message: "Flight ID is required and cannot be empty." });
+    }
+
+    const checkFlightQuery = `SELECT airplane_status FROM flight WHERE flightID = ?`;
+    db.query(checkFlightQuery, [flightID], (err, result) => {
+        if (err) {
+            console.error("Database Query Error (Check Flight):", err);
+            return res.status(500).json({ message: "Error checking flight existence." });
+        }
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: `Flight with ID '${flightID}' does not exist.` });
+        }
+
+        const airplaneStatus = result[0].airplane_status;
+        if (airplaneStatus !== "on_ground") {
+            return res.status(400).json({ message: `Flight with ID '${flightID}' is not on the ground. Current status: '${airplaneStatus}'.` });
+        }
+
+        const q = `CALL passengers_disembark(?)`;
+        db.query(q, [flightID], (err, result) => {
+            if (err) {
+                console.error("Database Query Error (POST /passengers_disembark):", err);
+                return res.status(500).json({ message: "Error disembarking passengers." });
+            }
+
+            if (result.affectedRows === 0) {
+                return res.status(200).json({ message: `No passengers to disembark for flight ID '${flightID}'.` });
+            }
+
+            return res.status(200).json({ message: "Passengers disembarked successfully!" });
+        });
+    });
+});
+
+
+app.post("/passengers_board", (req, res) => {
+    const { flightID } = req.body;
+
+    if (!flightID || flightID.trim() === "") {
+        return res.status(400).json({ message: "Flight ID is required and cannot be empty." });
+    }
+
+    const q = `CALL passengers_board(?)`;
+    db.query(q, [flightID], (err, result) => {
+        if (err) {
+            console.error("Database Query Error (POST /passengers_board):", err);
+            return res.status(500).json({ message: "Error boarding passengers." });
+        }
+
+        if (!result || !result[0] || result[0].length === 0) {
+            return res.status(200).json({ message: `No passengers to board for flight ID '${flightID}'.` });
+        }
+
+        return res.status(200).json({
+            message: "Passengers boarded successfully!",
+            passengers: result[0] 
+        });
+    });
+});
+
+
+app.get("/boarded_passengers/:flightID", (req, res) => {
+    const { flightID } = req.params;
+
+    if (!flightID || flightID.trim() === "") {
+        return res.status(400).json({ message: "Flight ID is required and cannot be empty." });
+    }
+
+    const q = `
+        SELECT p.personID, p.first_name, p.last_name
+        FROM person p
+        JOIN passenger ps ON p.personID = ps.personID
+        WHERE p.locationID = (
+            SELECT ap.locationID
+            FROM flight f
+            JOIN airplane ap ON f.support_airline = ap.airlineID AND f.support_tail = ap.tail_num
+            WHERE f.flightID = ?
+        )
+    `;
+
+    db.query(q, [flightID], (err, data) => {
+        if (err) {
+            console.error("Database Query Error (GET /boarded_passengers):", err);
+            return res.status(500).json({ message: "Error fetching boarded passengers." });
+        }
+
+        if (!data || data.length === 0) {
+            return res.status(200).json({
+                message: `No passengers are currently boarded on flight ID '${flightID}'.`,
+                passengers: [] 
+            });
+        }
+
+        return res.status(200).json({
+            message: "Boarded passengers retrieved successfully!",
+            passengers: data
+        });
+    });
+});
+
+app.get("/flights_in_air", (req, res) => {
+    const q = `SELECT * FROM people_in_the_air`;
+    db.query(q, (err, data) => {
+        if (err) {
+            console.error("Database Query Error (GET /flights_in_air):", err);
+            return res.status(500).json({ message: "Error fetching flights in the air." });
+        }
+        return res.status(200).json(data);
+    });
+});
+
+app.get("/people_on_the_ground", (req, res) => {
+    const q = `SELECT * FROM people_on_the_ground`;
+    db.query(q, (err, data) => {
+        if (err) {
+            console.error("Database Query Error (GET /people_on_the_ground):", err);
+            return res.status(500).json({ message: "Error fetching people on the ground." });
+        }
+        return res.status(200).json(data);
+    });
+});
+
+app.get("/flights_in_air", (req, res) => {
+    const q = `SELECT * FROM people_in_the_air`;
+    db.query(q, (err, data) => {
+        if (err) {
+            console.error("Database Query Error (GET /flights_in_air):", err);
+            return res.status(500).json({ message: "Error fetching flights in the air." });
+        }
+        return res.status(200).json(data);
+    });
+});
+
+app.get("/route_summary", (req, res) => {
+    const q = `SELECT * FROM route_summary`;
+    db.query(q, (err, data) => {
+        if (err) {
+            console.error("Database Query Error (GET /route_summary):", err);
+            return res.status(500).json({ message: "Error fetching route summaries." });
+        }
+        return res.status(200).json(data);
+    });
+});
+// --- Make sure other routes (/, /airplane, /airport) and app.listen remain ---
+
+
+// --- OTHER ROUTES (Keep existing ones if any) ---
+app.get("/", (req, res) => {
+    res.json("Backend is running!");
+});
+
+// --- START SERVER ---
 
 // --- PILOT & PILOT ASSIGNMENT/LICENSE ROUTES ---
 
