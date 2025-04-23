@@ -250,6 +250,24 @@ app.get("/flights_in_the_air", (req, res) => {
     });
 });
 
+// GET all flights in air
+app.get("/flights_on_the_ground", (req, res) => {
+    const q = `
+        SELECT departing_from, num_flights, flight_list,
+                earliest_arrival, latest_arrival, airplane_list
+        FROM flights_on_the_ground
+    `;
+
+    db.query(q, (err, data) => {
+        if (err) {
+            console.error("Database Query Error (GET /flights_on_the_ground):", err);
+            return res.status(500).json({ message: "Error fetching flights in air from database." });
+        }
+        console.log(data);
+        return res.json(data);
+    });
+});
+
 // --- Make sure other routes (/, /airplane, /airport) and app.listen remain ---
 
 
