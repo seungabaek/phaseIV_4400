@@ -207,14 +207,14 @@ app.get("/flight", (req, res) => {
 
 app.get("/flight", (req, res) => {
     const q = `
-        SELECT 
-            flightID, 
-            routeID, 
-            progress, 
-            next_time AS nextTime, 
-            cost, 
-            support_airline AS supportAirline, 
-            support_tail AS supportTail 
+        SELECT
+            flightID,
+            routeID,
+            progress,
+            next_time AS nextTime,
+            cost,
+            support_airline AS supportAirline,
+            support_tail AS supportTail
         FROM flight
         ORDER BY flightID;
     `;
@@ -352,7 +352,7 @@ app.post("/passengers_board", (req, res) => {
 
         return res.status(200).json({
             message: "Passengers boarded successfully!",
-            passengers: result[0] 
+            passengers: result[0]
         });
     });
 });
@@ -386,7 +386,7 @@ app.get("/boarded_passengers/:flightID", (req, res) => {
         if (!data || data.length === 0) {
             return res.status(200).json({
                 message: `No passengers are currently boarded on flight ID '${flightID}'.`,
-                passengers: [] 
+                passengers: []
             });
         }
 
@@ -394,6 +394,17 @@ app.get("/boarded_passengers/:flightID", (req, res) => {
             message: "Boarded passengers retrieved successfully!",
             passengers: data
         });
+    });
+});
+
+app.get("/alternate_airports", (req, res) => {
+    const q = `SELECT * FROM alternative_airports`;
+    db.query(q, (err, data) => {
+        if (err) {
+            console.error("Database Query Error (GET /alternate_airports):", err);
+            return res.status(500).json({ message: "Error fetching flights in the air." });
+        }
+        return res.status(200).json(data);
     });
 });
 
@@ -414,17 +425,6 @@ app.get("/people_on_the_ground", (req, res) => {
         if (err) {
             console.error("Database Query Error (GET /people_on_the_ground):", err);
             return res.status(500).json({ message: "Error fetching people on the ground." });
-        }
-        return res.status(200).json(data);
-    });
-});
-
-app.get("/flights_in_air", (req, res) => {
-    const q = `SELECT * FROM people_in_the_air`;
-    db.query(q, (err, data) => {
-        if (err) {
-            console.error("Database Query Error (GET /flights_in_air):", err);
-            return res.status(500).json({ message: "Error fetching flights in the air." });
         }
         return res.status(200).json(data);
     });
