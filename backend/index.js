@@ -186,21 +186,19 @@ app.post("/offer_flight", (req, res) => {
 
     db.query(q, values, (err, result) => {
         if (err) {
-            console.error("Database Query Error (POST /offer_flight):", err);
-
-            if (err.code === 'ER_NO_REFERENCED_ROW_2') {
-                return res.status(400).json({ message: "Invalid route or airplane." });
-            }
+            console.error("Database Query Error (CALL offer_flight):", err);
             return res.status(500).json({ message: "Error offering flight." });
         }
 
-        if (result.affectedRows === 0) {
+        const offerResult = result?.[0]?.[0]?.result;
+        if (offerResult !== 'SUCCESS') {
             return res.status(400).json({ message: "Flight could not be offered due to invalid data." });
         }
 
         return res.status(201).json({ message: "Flight offered successfully!" });
     });
 });
+
 
 app.get("/flights_in_the_air", (req, res) => {
     const q = `
