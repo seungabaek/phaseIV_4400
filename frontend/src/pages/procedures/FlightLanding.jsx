@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import './FormStyles.css'; 
+import './FormStyles.css';
 
 const API_URL = 'http://localhost:8800';
 
-const FlightTakeoff = () => {
+const FlightLanding = () => {
     const [flightID, setFlightID] = useState('');
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
@@ -30,7 +30,7 @@ const FlightTakeoff = () => {
         fetchFlights();
     }, [fetchFlights]);
 
-    const handleTakeoff = async (event) => {
+    const handleLanding = async (event) => {
         event.preventDefault();
         setError(null);
         setSuccess(null);
@@ -41,26 +41,26 @@ const FlightTakeoff = () => {
         }
 
         try {
-            const response = await axios.post(`${API_URL}/flight_takeoff`, { flightID });
-            setSuccess(`Flight ${flightID} took off successfully!`);
+            const response = await axios.post(`${API_URL}/flight_landing`, { flightID });
+            setSuccess(`Flight ${flightID} landed successfully!`);
             setFlightID('');
             fetchFlights();
         } catch (err) {
-            console.error("Takeoff error:", err);
-            setError(err.response?.data?.message || "Takeoff failed.");
+            console.error("Landing error:", err);
+            setError(err.response?.data?.message || "Landing failed.");
         }
     };
 
     return (
         <div className="home-container">
             <header className="home-header">
-                <h1>Flight Tracking Dashboard - Flight Takeoff</h1>
+                <h1>Flight Tracking Dashboard - Flight Landing</h1>
             </header>
 
             <main className="home-main">
                 <section className="card add-airplane-section">
-                    <h2>Initiate Flight Takeoff</h2>
-                    <form onSubmit={handleTakeoff} className="add-airplane-form">
+                    <h2>Initiate Flight Landing</h2>
+                    <form onSubmit={handleLanding} className="add-airplane-form">
                         <div className="form-group">
                             <label htmlFor="flightID">Flight ID</label>
                             <input
@@ -76,7 +76,7 @@ const FlightTakeoff = () => {
                         {error && <p className="error-message">{error}</p>}
                         {success && <p className="success-message">{success}</p>}
 
-                        <button type="submit" className="submit-button">Initiate Takeoff</button>
+                        <button type="submit" className="submit-button">Initiate Landing</button>
                     </form>
                 </section>
 
@@ -92,7 +92,7 @@ const FlightTakeoff = () => {
                                         <th>Status</th>
                                         <th>Support Airline</th>
                                         <th>Support Tail</th>
-                                        
+
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -103,7 +103,7 @@ const FlightTakeoff = () => {
                                             <td>{f.airplane_status || 'N/A'}</td>
                                             <td>{f.support_airline || 'N/A'}</td>
                                             <td>{f.support_tail || 'N/A'}</td>
-                                            
+
                                         </tr>
                                     ))}
                                 </tbody>
@@ -116,4 +116,4 @@ const FlightTakeoff = () => {
     );
 };
 
-export default FlightTakeoff;
+export default FlightLanding;
