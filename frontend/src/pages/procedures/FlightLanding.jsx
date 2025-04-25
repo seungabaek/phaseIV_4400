@@ -90,9 +90,6 @@ const FlightLanding = () => {
                                         <th>Flight ID</th>
                                         <th>Route ID</th>
                                         <th>Status</th>
-                                        <th>Support Airline</th>
-                                        <th>Support Tail</th>
-
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -101,9 +98,6 @@ const FlightLanding = () => {
                                             <td>{f.flightID}</td>
                                             <td>{f.routeID}</td>
                                             <td>{f.airplane_status || 'N/A'}</td>
-                                            <td>{f.support_airline || 'N/A'}</td>
-                                            <td>{f.support_tail || 'N/A'}</td>
-
                                         </tr>
                                     ))}
                                 </tbody>
