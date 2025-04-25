@@ -559,7 +559,7 @@ app.post("/flight_takeoff", (req, res) => {
             console.error("Database Query Error (POST /flight_takeoff):", err);
             return res.status(500).json({ message: "Error initiating takeoff." });
         }
-        return res.status(200).json({ message: `Flight '${flightID}' took off successfully.` });
+        return res.status(200).json({ message: `Flight '${flightID}' landed successfully.` });
     });
 });
 
