@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import './FormStyles.css'; 
+import './FormStyles.css';
 
 const API_URL = 'http://localhost:8800';
 
 const AddAirplane = () => {
-    const [flights, setFlights] = useState([]); 
+    const [flights, setFlights] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -26,7 +26,7 @@ const AddAirplane = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get(`${API_URL}/flight`); 
+            const response = await axios.get(`${API_URL}/flight`);
             setFlights(response.data);
         } catch (err) {
             console.error("Error fetching flights:", err);
@@ -38,7 +38,7 @@ const AddAirplane = () => {
 
     useEffect(() => {
         fetchFlights();
-    }, [fetchFlights]); 
+    }, [fetchFlights]);
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
@@ -80,7 +80,7 @@ const AddAirplane = () => {
                 supportAirline: '',
                 supportTail: ''
             });
-            fetchFlights(); 
+            fetchFlights();
         } catch (err) {
             console.error("Error offering flight:", err);
             setAddError(err.response?.data?.message || "Failed to offer flight.");
@@ -119,7 +119,7 @@ const AddAirplane = () => {
                             <input type="number" id="cost" name="cost" value={newFlight.cost} onChange={handleInputChange} required />
                         </div>
 
-                
+
                         <div className="form-group">
                             <label htmlFor="supportAirline">Support Airline</label>
                             <input type="text" id="supportAirline" name="supportAirline" value={newFlight.supportAirline} onChange={handleInputChange} />
@@ -148,11 +148,6 @@ const AddAirplane = () => {
                                     <tr>
                                         <th>Flight ID</th>
                                         <th>Route ID</th>
-                                        <th>Progress</th>
-                                        <th>Next Time</th>
-                                        <th>Cost</th>
-                                        <th>Support Airline</th>
-                                        <th>Support Tail</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -161,11 +156,6 @@ const AddAirplane = () => {
                                             <tr key={flight.flightID}>
                                                 <td>{flight.flightID}</td>
                                                 <td>{flight.routeID}</td>
-                                                <td>{flight.progress}</td>
-                                                <td>{flight.nextTime}</td>
-                                                <td>{flight.cost}</td>
-                                                <td>{flight.supportAirline || 'N/A'}</td>
-                                                <td>{flight.supportTail || 'N/A'}</td>
                                             </tr>
                                         ))
                                     ) : (
