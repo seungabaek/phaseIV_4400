@@ -48,41 +48,23 @@ app.post("/airplane", (req, res) => {
     if (!airlineID || !tail_num || !seat_capacity || !speed) {
         return res.status(400).json({ message: "Missing required fields: airlineID, tail_num, seat_capacity, speed" });
     }
-    const seatCapInt = parseInt(seat_capacity);
-    const speedInt = parseInt(speed);
-    if (isNaN(seatCapInt) || isNaN(speedInt)) {
-        return res.status(400).json({ message: "seat_capacity and speed must be valid numbers." });
-    }
-    if (seatCapInt <= 0 || speedInt <= 0) {
-         return res.status(400).json({ message: "seat_capacity and speed must be positive numbers." });
-     }
 
-    const q = `INSERT INTO airplane
-               (airlineID, tail_num, seat_capacity, speed, locationID, plane_type, maintenanced, model, neo)
-               VALUES (?)`;
+    const q = `CALL add_airplane(?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
-        airlineID, tail_num, seatCapInt, speedInt,
+        airlineID, tail_num, parseInt(seat_capacity, 10), parseInt(speed, 10),
         locationID || null, plane_type || null, maintenanced ? 1 : 0,
         model || null, neo ? 1 : 0
     ];
 
-    db.query(q, [values], (err, result) => {
+    db.query(q, values, (err, result) => {
         if (err) {
-            console.error("Database Query Error (POST /airplane):", err);
-            if (err.code === 'ER_DUP_ENTRY') {
-                 return res.status(409).json({ message: `Airplane with Airline ID '${airlineID}' and Tail Number '${tail_num}' already exists.` });
-            }
-             if (err.code === 'ER_NO_REFERENCED_ROW_2' && err.message.includes('fk1')) {
-                 return res.status(400).json({ message: `Airline ID '${airlineID}' does not exist in the airline table.` });
-             }
-             if (err.code === 'ER_NO_REFERENCED_ROW_2' && err.message.includes('fk3')) {
-                 return res.status(400).json({ message: `Location ID '${locationID}' does not exist in the location table.` });
-             }
-            return res.status(500).json({ message: "Error adding airplane to the database." });
+            console.error("Database Query Error (CALL add_airplane):", err);
+            return res.status(500).json({ message: "Error adding airplane via stored procedure." });
         }
-        return res.status(201).json({ message: "Airplane added successfully!", insertedId: result.insertId });
+        return res.status(201).json({ message: "Airplane added successfully!" });
     });
 });
+
 
 app.get("/airport", (req, res) => {
     const q = "SELECT airportID, airport_name, city, state, country, locationID FROM airport ORDER BY airportID";
@@ -101,36 +83,26 @@ app.post("/airport", (req, res) => {
     if (!airportID || !airport_name || !city || !state || !country) {
         return res.status(400).json({ message: "Missing required fields: airportID, airport_name, city, state, country" });
     }
-    if (typeof airportID !== 'string' || airportID.trim().length !== 3) {
-        return res.status(400).json({ message: "Airport ID must be exactly 3 characters." });
-    }
-    if (typeof country !== 'string' || country.trim().length !== 3) {
-        return res.status(400).json({ message: "Country code must be exactly 3 characters." });
-    }
-    if (locationID && typeof locationID !== 'string') {
-        return res.status(400).json({ message: "Location ID must be a string." });
-    }
 
-    const q = `INSERT INTO airport (airportID, airport_name, city, state, country, locationID) VALUES (?)`;
+    const q = `CALL add_airport(?, ?, ?, ?, ?, ?)`;
     const values = [
-        airportID.trim().toUpperCase(), airport_name.trim(), city.trim(), state.trim(),
-        country.trim().toUpperCase(), locationID ? locationID.trim() : null
+        airportID.trim().toUpperCase(),
+        airport_name.trim(),
+        city.trim(),
+        state.trim(),
+        country.trim().toUpperCase(),
+        locationID || null
     ];
 
-    db.query(q, [values], (err, result) => {
+    db.query(q, values, (err, result) => {
         if (err) {
-            console.error("Database Query Error (POST /airport):", err);
-            if (err.code === 'ER_DUP_ENTRY') {
-                 return res.status(409).json({ message: `Airport with ID '${values[0]}' already exists.` });
-            }
-             if (err.code === 'ER_NO_REFERENCED_ROW_2' && err.message.includes('fk2')) {
-                 return res.status(400).json({ message: `Location ID '${values[5]}' does not exist in the location table.` });
-             }
-            return res.status(500).json({ message: "Error adding airport to the database." });
+            console.error("Database Query Error (CALL add_airport):", err);
+            return res.status(500).json({ message: "Error adding airport via stored procedure." });
         }
-        return res.status(201).json({ message: "Airport added successfully!", insertedId: values[0] });
+        return res.status(201).json({ message: "Airport added successfully!" });
     });
 });
+
 
 app.get("/person", (req, res) => {
     const q = "SELECT personID, first_name, last_name, locationID FROM person ORDER BY personID";
@@ -149,39 +121,24 @@ app.post("/person", (req, res) => {
     if (!personID || !first_name || !locationID) {
         return res.status(400).json({ message: "Missing required fields: personID, first_name, locationID" });
     }
-    if (typeof personID !== 'string' || personID.trim().length === 0) {
-         return res.status(400).json({ message: "Person ID must be a non-empty string." });
-    }
-    if (typeof first_name !== 'string' || first_name.trim().length === 0) {
-         return res.status(400).json({ message: "First Name must be a non-empty string." });
-    }
-    if (typeof locationID !== 'string' || locationID.trim().length === 0) {
-        return res.status(400).json({ message: "Location ID must be a non-empty string." });
-    }
-    if (last_name && typeof last_name !== 'string') {
-         return res.status(400).json({ message: "Last Name must be a string if provided." });
-    }
 
-    const q = `INSERT INTO person (personID, first_name, last_name, locationID) VALUES (?)`;
+    const q = `CALL add_person(?, ?, ?, ?)`;
     const values = [
-        personID.trim(), first_name.trim(),
-        last_name ? last_name.trim() : null, locationID.trim()
+        personID.trim(),
+        first_name.trim(),
+        last_name ? last_name.trim() : null,
+        locationID.trim()
     ];
 
-    db.query(q, [values], (err, result) => {
+    db.query(q, values, (err, result) => {
         if (err) {
-            console.error("Database Query Error (POST /person):", err);
-            if (err.code === 'ER_DUP_ENTRY') {
-                 return res.status(409).json({ message: `Person with ID '${values[0]}' already exists.` });
-            }
-             if (err.code === 'ER_NO_REFERENCED_ROW_2' && err.message.includes('fk8')) {
-                 return res.status(400).json({ message: `Location ID '${values[3]}' does not exist in the location table.` });
-             }
-            return res.status(500).json({ message: "Error adding person to the database." });
+            console.error("Database Query Error (CALL add_person):", err);
+            return res.status(500).json({ message: "Error adding person via stored procedure." });
         }
-        return res.status(201).json({ message: "Person added successfully!", insertedId: values[0] });
+        return res.status(201).json({ message: "Person added successfully!" });
     });
 });
+
 
 app.get("/flight", (req, res) => {
     const q = "SELECT flightID, routeID, airplane_status FROM flight ORDER BY flightID";
@@ -229,21 +186,19 @@ app.post("/offer_flight", (req, res) => {
 
     db.query(q, values, (err, result) => {
         if (err) {
-            console.error("Database Query Error (POST /offer_flight):", err);
-
-            if (err.code === 'ER_NO_REFERENCED_ROW_2') {
-                return res.status(400).json({ message: "Invalid route or airplane." });
-            }
+            console.error("Database Query Error (CALL offer_flight):", err);
             return res.status(500).json({ message: "Error offering flight." });
         }
 
-        if (result.affectedRows === 0) {
+        const offerResult = result?.[0]?.[0]?.result;
+        if (offerResult !== 'SUCCESS') {
             return res.status(400).json({ message: "Flight could not be offered due to invalid data." });
         }
 
         return res.status(201).json({ message: "Flight offered successfully!" });
     });
 });
+
 
 app.get("/flights_in_the_air", (req, res) => {
     const q = `
