@@ -8,9 +8,8 @@ const SimulationCycle = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
-    const [flights, setFlights] = useState([]); // <-- FIX: Add this
+    const [flights, setFlights] = useState([]); 
 
-    // Run the simulation
     const runSimulation = async () => {
         setLoading(true);
         setError(null);
@@ -19,7 +18,7 @@ const SimulationCycle = () => {
         try {
             const response = await axios.post(`${API_URL}/simulation_cycle`);
             setSuccess(response.data.message || "Simulation cycle executed successfully.");
-            fetchFlights(); // <-- Refresh flights
+            fetchFlights(); 
         } catch (err) {
             console.error("Simulation cycle failed:", err);
             setError(err.response?.data?.message || "Simulation cycle failed.");
