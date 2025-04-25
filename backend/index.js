@@ -1,44 +1,36 @@
-// index.js
-
 import express from "express";
 import mysql from "mysql";
 import cors from "cors";
 
 const app = express();
 
-// --- MIDDLEWARE ---
 app.use(cors({
-    origin: "http://localhost:3000", // Your React app's URL
-    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
+    origin: "http://localhost:3000", 
+    methods: ["GET", "POST", "PUT", "DELETE"], 
 }));
-app.use(express.json()); // To parse JSON request bodies
+app.use(express.json());
 
-// --- DATABASE CONNECTION ---
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "team19", // Replace with your actual password if needed
+    password: "team19", 
     database: "flight_tracking"
 });
 
-// Connect to DB (Only ONCE)
 db.connect((err) => {
     if (err) {
         console.error("Error connecting to MySQL:", err.stack);
-        process.exit(1); // Exit if DB connection fails on startup
+        process.exit(1); 
     }
     console.log("MySQL connected as id " + db.threadId);
 });
 
 
-// --- ROUTE DEFINITIONS ---
 
-// Base Route
 app.get("/", (req, res) => {
     res.json("Backend is running!");
 });
 
-// --- AIRPLANE ROUTES ---
 app.get("/airplane", (req, res) => {
     const q = "SELECT * FROM airplane ORDER BY airlineID, tail_num";
     db.query(q, (err, data) => {
@@ -92,7 +84,6 @@ app.post("/airplane", (req, res) => {
     });
 });
 
-// --- AIRPORT ROUTES ---
 app.get("/airport", (req, res) => {
     const q = "SELECT airportID, airport_name, city, state, country, locationID FROM airport ORDER BY airportID";
     db.query(q, (err, data) => {
@@ -141,7 +132,6 @@ app.post("/airport", (req, res) => {
     });
 });
 
-// --- PERSON ROUTES ---
 app.get("/person", (req, res) => {
     const q = "SELECT personID, first_name, last_name, locationID FROM person ORDER BY personID";
     db.query(q, (err, data) => {
@@ -193,7 +183,6 @@ app.post("/person", (req, res) => {
     });
 });
 
-// --- FLIGHT ROUTES --- (Needed for pilot assignment dropdown)
 app.get("/flight", (req, res) => {
     const q = "SELECT flightID, routeID, airplane_status FROM flight ORDER BY flightID";
     db.query(q, (err, data) => {
@@ -256,7 +245,6 @@ app.post("/offer_flight", (req, res) => {
     });
 });
 
-// GET all flights in air
 app.get("/flights_in_the_air", (req, res) => {
     const q = `
         SELECT departing_from, arriving_at, num_flights, flight_list,
@@ -274,7 +262,6 @@ app.get("/flights_in_the_air", (req, res) => {
     });
 });
 
-// GET all flights in air
 app.get("/flights_on_the_ground", (req, res) => {
     const q = `
         SELECT departing_from, num_flights, flight_list,
@@ -440,19 +427,12 @@ app.get("/route_summary", (req, res) => {
         return res.status(200).json(data);
     });
 });
-// --- Make sure other routes (/, /airplane, /airport) and app.listen remain ---
 
 
-// --- OTHER ROUTES (Keep existing ones if any) ---
 app.get("/", (req, res) => {
     res.json("Backend is running!");
 });
 
-// --- START SERVER ---
-
-// --- PILOT & PILOT ASSIGNMENT/LICENSE ROUTES ---
-
-// GET all pilots (with names, for dropdowns)
 app.get("/pilot", (req, res) => {
     const q = `
         SELECT
@@ -473,7 +453,6 @@ app.get("/pilot", (req, res) => {
     });
 });
 
-// PUT - Assign/Unassign a flight to a pilot
 app.put("/pilot/:personId/assignFlight", (req, res) => {
     const personId = req.params.personId;
     const { flightId } = req.body;
@@ -506,7 +485,6 @@ app.put("/pilot/:personId/assignFlight", (req, res) => {
     });
 });
 
-// GET - Fetch licenses for a specific pilot
 app.get("/pilot/:personId/licenses", (req, res) => {
     const personId = req.params.personId;
     if (!personId) {
@@ -518,11 +496,10 @@ app.get("/pilot/:personId/licenses", (req, res) => {
             console.error(`Database Query Error (GET /pilot/${personId}/licenses):`, err);
             return res.status(500).json({ message: "Error fetching pilot licenses." });
         }
-        return res.json(data.map(item => item.license)); // Send array of strings
+        return res.json(data.map(item => item.license)); 
     });
 });
 
-// POST - Call SP to grant or revoke a specific license for a pilot
 app.post("/pilot/:personId/toggleLicense", (req, res) => {
     const personId = req.params.personId;
     const { license } = req.body;
@@ -539,7 +516,7 @@ app.post("/pilot/:personId/toggleLicense", (req, res) => {
     db.query(q, [personId, licenseToToggle], (err, result) => {
         if (err) {
             console.error(`Database Query Error (CALL SP grant_or_revoke_pilot_license for ${personId}, ${licenseToToggle}):`, err);
-             if (err.code === 'ER_NO_REFERENCED_ROW_2') { // Less likely due to SP check
+             if (err.code === 'ER_NO_REFERENCED_ROW_2') { 
                  return res.status(404).json({ message: `Pilot with Person ID '${personId}' not found.` });
              }
             return res.status(500).json({ message: `Error processing license change for ${licenseToToggle}.` });
